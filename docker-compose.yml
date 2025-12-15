@@ -1,0 +1,27 @@
+services:
+  # Database PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: thegourmet_db
+    environment:
+      - POSTGRES_DB=TheGourmetDb
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=hihihehe
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_new:/var/lib/postgresql/data
+    
+    # Message Queue RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: thegourmet_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    
+volumes:
+  pgdata_new:
