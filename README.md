@@ -189,5 +189,5 @@ This project is released under the MIT License.
 - Domain-Driven Design by Eric Evans
 - .NET Community
 
----
+----
 ⭐ If you find this project useful, please give it a star!
