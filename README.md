@@ -1,5 +1,10 @@
 # 🍽️ TheGourmet
 
+[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet)](https://dotnet.microsoft.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600?style=flat&logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 TheGourmet is a modern API system built on .NET 9 platform, applying Clean Architecture to ensure scalability, maintainability, and easy testing.
 
 ## 📋 Overview
