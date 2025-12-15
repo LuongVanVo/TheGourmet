@@ -1,14 +1,14 @@
 # 🍽️ TheGourmet
 
-TheGourmet là một hệ thống API hiện đại được xây dựng trên nền tảng .NET 9, áp dụng kiến trúc Clean Architecture để đảm bảo tính mở rộng, bảo trì và kiểm thử dễ dàng.
+TheGourmet is a modern API system built on .NET 9 platform, applying Clean Architecture to ensure scalability, maintainability, and easy testing.
 
-## 📋 Tổng quan
+## 📋 Overview
 
-Dự án này được thiết kế để cung cấp một API backend mạnh mẽ, tuân thủ các nguyên tắc SOLID và Domain-Driven Design (DDD), phù hợp cho các ứng dụng quy mô lớn.
+This project is designed to provide a robust backend API, adhering to SOLID principles and Domain-Driven Design (DDD), suitable for large-scale applications.
 
-## 🏗️ Kiến trúc
+## 🏗️ Architecture
 
-Dự án được tổ chức theo **Clean Architecture** với 4 layers chính:
+The project is organized following **Clean Architecture** with 4 main layers:
 
 ```
 TheGourmet/
@@ -26,47 +26,47 @@ TheGourmet/
 Api → Infrastructure → Application → Domain
 ```
 
-## 🚀 Công nghệ sử dụng
+## 🚀 Technology Stack
 
 ### Core Framework
-- **.NET 9** - Framework chính
+- **.NET 9** - Main framework
 - **ASP.NET Core Web API** - RESTful API
 
 ### Database & ORM
-- **PostgreSQL** - Hệ quản trị cơ sở dữ liệu quan hệ
+- **PostgreSQL** - Relational database management system
 - **Entity Framework Core 9** - ORM
-- **Npgsql** - PostgreSQL provider cho EF Core
+- **Npgsql** - PostgreSQL provider for EF Core
 
 ### Message Broker
-- **RabbitMQ** - Message queue để xử lý bất đồng bộ
-- **MassTransit** - Framework để làm việc với RabbitMQ
+- **RabbitMQ** - Message queue for asynchronous processing
+- **MassTransit** - Framework for working with RabbitMQ
 
 ### Patterns & Libraries
-- **MediatR** - CQRS pattern và Mediator
+- **MediatR** - CQRS pattern and Mediator
 - **FluentValidation** - Validation logic
 - **AutoMapper** - Object-to-object mapping
 
-## 📦 Cài đặt
+## 📦 Installation
 
-### Yêu cầu
+### Requirements
 - .NET 9 SDK
-- Docker & Docker Compose (khuyến nghị)
+- Docker & Docker Compose (recommended)
 - PostgreSQL 16+
 - RabbitMQ
 
-### Bước 1: Clone repository
+### Step 1: Clone repository
 ```bash
 git clone https://github.com/LuongVanVo/TheGourmet.git
 cd TheGourmet
 ```
 
-### Bước 2: Khởi động Infrastructure Services
+### Step 2: Start Infrastructure Services
 ```bash
 docker-compose up -d
 ```
 
-### Bước 3: Cập nhật Connection String
-Chỉnh sửa `appsettings.Development.json` trong project `TheGourmet.Api`:
+### Step 3: Update Connection String
+Edit `appsettings.Development.json` in the `TheGourmet.Api` project:
 ```json
 {
   "ConnectionStrings": {
@@ -75,18 +75,18 @@ Chỉnh sửa `appsettings.Development.json` trong project `TheGourmet.Api`:
 }
 ```
 
-### Bước 4: Chạy Migration
+### Step 4: Run Migration
 ```bash
 cd src/TheGourmet.Api
 dotnet ef database update --project ../TheGourmet.Infrastructure
 ```
 
-### Bước 5: Chạy ứng dụng
+### Step 5: Run the application
 ```bash
 dotnet run --project src/TheGourmet.Api
 ```
 
-API sẽ chạy tại: `https://localhost:5001` (hoặc port được cấu hình)
+The API will run at: `https://localhost:5001` (or configured port)
 
 ## 🔧 Development
 
@@ -105,14 +105,14 @@ dotnet build
 dotnet test
 ```
 
-### Tạo Migration mới
+### Create new Migration
 ```bash
 dotnet ef migrations add MigrationName --project src/TheGourmet.Infrastructure --startup-project src/TheGourmet.Api
 ```
 
 ## 📚 API Documentation
 
-Khi chạy ở chế độ Development, truy cập Swagger UI tại: 
+When running in Development mode, access Swagger UI at:
 ```
 https://localhost:5001/swagger
 ```
@@ -121,30 +121,30 @@ https://localhost:5001/swagger
 ```bash
 GET /api/health
 ```
-Kiểm tra trạng thái của API và kết nối database.
+Check the status of API and database connection.
 
 ## 🐳 Docker
 
-### Chạy toàn bộ stack với Docker Compose
+### Run the entire stack with Docker Compose
 ```bash
 docker-compose up -d
 ```
 
-Services bao gồm:
+Services include:
 - PostgreSQL (Port: 5432)
 - RabbitMQ (Port: 5672, Management UI: 15672)
 
 ## 📖 Project Structure
 
 ### Domain Layer
-Chứa business logic và entities, không phụ thuộc vào layer nào khác.
+Contains business logic and entities, independent of any other layers.
 - Entities (BaseEntity)
 - Value Objects
 - Domain Events
 - Domain Exceptions
 
 ### Application Layer
-Chứa use cases và business rules của ứng dụng.
+Contains use cases and business rules of the application.
 - Commands & Queries (CQRS)
 - DTOs
 - Validators
@@ -152,33 +152,33 @@ Chứa use cases và business rules của ứng dụng.
 - Interfaces
 
 ### Infrastructure Layer
-Triển khai các interfaces được định nghĩa trong Application layer.
+Implements interfaces defined in the Application layer.
 - DbContext & Migrations
 - Repositories
 - External Services
 - Message Handlers
 
 ### API Layer
-Presentation layer, xử lý HTTP requests.
+Presentation layer, handles HTTP requests.
 - Controllers
 - Middleware
 - Filters
 - API Configuration
 
-## 🤝 Đóng góp
+## 🤝 Contributing
 
-Mọi đóng góp đều được chào đón! Vui lòng:
-1. Fork repository
-2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Mở Pull Request
+All contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📝 License
 
-Dự án này được phát hành dưới MIT License.
+This project is released under the MIT License.
 
-## 👤 Tác giả
+## 👤 Author
 
 **LuongVanVo**
 - GitHub: [@LuongVanVo](https://github.com/LuongVanVo)
@@ -190,4 +190,4 @@ Dự án này được phát hành dưới MIT License.
 - .NET Community
 
 ---
-⭐ Nếu bạn thấy project hữu ích, hãy cho một star nhé!
+⭐ If you find this project useful, please give it a star!
