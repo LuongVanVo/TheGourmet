@@ -11,8 +11,13 @@ services:
       - "5433:5432"
     volumes:
       - pgdata_new:/var/lib/postgresql/data
-    
-    # Message Queue RabbitMQ
+  # Redis 
+  redis:
+    image: redis:alpine
+    container_name: thegourmet_redis
+    ports:
+      - "6380:6379"
+  # Message Queue RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management
     container_name: thegourmet_rabbitmq
