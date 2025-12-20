@@ -3,46 +3,53 @@ using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using TheGourmet.Application.Interfaces;
+using Microsoft.Extensions.Configuration;
+using TheGourmet.Domain.Entities.Identity;
 
 namespace TheGourmet.Infrastructure.Services;
 
 public class TokenService : ITokenService
 {
-    private readonly IJwtKeyProvider _jwtKeyProvider;
-    public TokenService(IJwtKeyProvider jwtKeyProvider)
+    private readonly IConfiguration _configuration;
+    private readonly IJwtKeyProvider _rsaKeyProvider;
+    public TokenService(IConfiguration configuration, IJwtKeyProvider rsaKeyProvider)
     {
-        _jwtKeyProvider = jwtKeyProvider;
+        _rsaKeyProvider = rsaKeyProvider;
+        _configuration = configuration;
     }
     
-    public string GenerateAccessToken(string userId, string role)
+    public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
     {
-        // Get private key from provider 
-        var rsa = _jwtKeyProvider.GetPrivateKey();
+        // 1. Lấy Private key từ file .pem
+        var key = _rsaKeyProvider.GetPrivateKey();
 
-        // Bọc vào RsaSecurityKey để JWT sử dụng
-        var rsaSecurityKey = new RsaSecurityKey(rsa);
+        // 2. Tạo thuật toán ký số với RSA SHA256
+        var credentials = new SigningCredentials(new RsaSecurityKey(key), SecurityAlgorithms.RsaSha256);
 
-        var credentials = new SigningCredentials(rsaSecurityKey, SecurityAlgorithms.RsaSha256);
-
-        // Nhét dữ liệu cần lưu vào token (claims)
-        var claims = new[]
+        // 3. Tạo Claims cho token (thông tin lưu trong token)
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, userId),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Role, role)
         };
 
-        // Cấu hình chi tiết về token
+        // Thêm role vào claims
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        // 4. Cấu hình token
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(30),
+            Expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "30")), // Token hết hạn sau 30 phút
             SigningCredentials = credentials,
-            Issuer = "TheGourmet",
-            Audience = "TheGourmetUser"
+            Issuer = _configuration["JwtSettings:Issuer"],
+            Audience = _configuration["JwtSettings:Audience"],
         };
 
-        // Tạo token
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
@@ -57,5 +64,29 @@ public class TokenService : ITokenService
         rng.GetBytes(randomNumber);
         
         return Convert.ToBase64String(randomNumber); // Trả về chuỗi base64 của mảng byte ngẫu nhiên
+    }
+
+    public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+    {
+        // Validate token bằng Public key
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new RsaSecurityKey(_rsaKeyProvider.GetPublicKey()),
+            ValidateLifetime = false // Token hết hạn vẫn cho đọc để lấy info refresh token
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+        // check xem có đúng thuật toán RSA không
+        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.RsaSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new SecurityTokenException("Invalid token");
+        }
+
+        return principal;
     }
 }
