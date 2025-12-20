@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using TheGourmet.Application.Interfaces;
 using TheGourmet.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +12,6 @@ builder.Services.AddSwaggerGen();
 // Connect Layer Infrastructure
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Log connection string for debugging
-var connString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 var app = builder.Build();
 
 // Configure pipeline
@@ -23,6 +22,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
