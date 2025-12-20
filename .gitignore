@@ -129,3 +129,6 @@ coverage/
 *.tmp
 *.temp
 ~$*
+
+// keys folder to store RSA keys
+keys/

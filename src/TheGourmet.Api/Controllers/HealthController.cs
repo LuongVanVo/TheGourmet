@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TheGourmet.Infrastructure.Persistence;
 
@@ -16,6 +17,7 @@ public class HealthController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> CheckHealth()
     {
