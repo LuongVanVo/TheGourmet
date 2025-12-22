@@ -235,4 +235,49 @@ public class AuthService : IAuthService
             Message = "Logged out successfully"
         };
     }
+
+    // Forgot password
+    public async Task<AuthResponse> ForgotPasswordAsync(ForgotPasswordRequest request)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(request.Email);
+        if (user == null || !await _userManager.IsEmailConfirmedAsync(user)) 
+            throw new NotFoundException("User not found");
+
+        var token = await _userRepository.GeneratePasswordResetTokenAsync(user);
+        var resetLink = $"{_configuration["ClientUrl"]}/api/auth/reset-password-page?email={Uri.EscapeDataString(request.Email)}&token={Uri.EscapeDataString(token)}";
+
+        await _publishEndpoint.Publish(new ForgotPasswordEvent
+        {
+            Email = request.Email,
+            ResetLink = resetLink
+        });
+
+        return new AuthResponse
+        {
+            Success = true,
+            Message = "Check your email to reset your password"
+        };
+    }
+
+    // Reset password
+    public async Task<AuthResponse> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(request.Email);
+        if (user == null) 
+            throw new NotFoundException("User not found");
+        
+        var result = await _userRepository.ResetPasswordAsync(user, request.Token, request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            throw new BadRequestException($"Password reset failed: {errors}");
+        }
+
+        return new AuthResponse
+        {
+            Success = true,
+            Message = "Password has been reset successfully"
+        };
+    } 
 }

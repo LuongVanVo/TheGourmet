@@ -22,4 +22,8 @@ public interface IUserRepository
     Task<IdentityResult> UpdateUserAsync(ApplicationUser user);
     // Get all roles of user
     Task<IList<string>> GetUserRolesAsync(ApplicationUser user);
+    // Reset password
+    Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string token, string newPassword);
+    // generate password reset token
+    Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user);
 }
