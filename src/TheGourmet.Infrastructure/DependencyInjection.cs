@@ -64,6 +64,7 @@ public static class DependencyInjection
         {
             // Đăng ký Consumer để MassTransit biết class nào xử lý tin nhắn nào 
             x.AddConsumer<SendEmailConsumer>();
+            x.AddConsumer<ForgotPasswordConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {

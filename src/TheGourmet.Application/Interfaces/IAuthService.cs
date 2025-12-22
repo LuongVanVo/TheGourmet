@@ -9,4 +9,6 @@ public interface IAuthService
     public Task<bool> ConfirmEmailAsync(string userId, string token);
     public Task<AuthResponse> RefreshTokenAsync(string token);
     public Task<AuthResponse> LogoutAsync(string refreshToken);
+    public Task<AuthResponse> ForgotPasswordAsync(ForgotPasswordRequest request);
+    public Task<AuthResponse> ResetPasswordAsync(ResetPasswordRequest request);
 }
