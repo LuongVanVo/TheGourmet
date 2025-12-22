@@ -16,15 +16,17 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
 
     // DI UserManager of IdentityUser and TokenService
-    public AuthService(ITokenService tokenService, UserManager<ApplicationUser> userManager, IUserRepository userRepository, IEmailService emailService, IConfiguration configuration)
+    public AuthService(ITokenService tokenService, UserManager<ApplicationUser> userManager, IUserRepository userRepository, IEmailService emailService, IConfiguration configuration, IRefreshTokenRepository refreshTokenRepository)
     {
         _tokenService = tokenService;
         _userManager = userManager;
         _userRepository = userRepository;  
         _emailService = emailService;
         _configuration = configuration;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -102,8 +104,23 @@ public class AuthService : IAuthService
         var roles = await _userRepository.GetUserRolesAsync(foundUser);
 
         // generate tokens
-        var accessToken = _tokenService.GenerateAccessToken(foundUser, roles);
+        var (accessToken, jwtId) = _tokenService.GenerateAccessToken(foundUser, roles);
         var refreshToken = _tokenService.GenerateRefreshToken();
+
+        // save refresh token to database
+        var refreshTokenEntity = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = refreshToken,
+            JwtId = jwtId,
+            IsUsed = false,
+            IsRevoked = false,
+            AddedDate = DateTime.UtcNow,
+            ExpiryDate = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("JwtSettings:RefreshTokenExpirationDays")),
+            UserId = foundUser.Id
+        };
+
+        await _refreshTokenRepository.AddRefreshTokenAsync(refreshTokenEntity);
 
         return new AuthResponse
         {
@@ -135,5 +152,78 @@ public class AuthService : IAuthService
         await _userRepository.UpdateUserAsync(user);
 
         return result.Succeeded;
+    }
+
+    // Refresh token 
+    public async Task<AuthResponse> RefreshTokenAsync(string token)
+    {
+        // 1. Find refresh token in database
+        var storedToken = await _refreshTokenRepository.GetRefreshTokenByTokenAsync(token);
+
+        if (storedToken == null)
+            throw new NotFoundException("Refresh token not found");
+        
+        if (storedToken.IsUsed) 
+            throw new BadRequestException("Refresh token has been used");
+        
+        if (storedToken.IsRevoked) 
+            throw new BadRequestException("Refresh token has been revoked");
+        
+        if (storedToken.ExpiryDate < DateTime.UtcNow) 
+            throw new BadRequestException("Refresh token has expired");
+        
+        // 2. Mark token as used
+        storedToken.IsUsed = true;
+        storedToken.IsRevoked = true;
+        await _refreshTokenRepository.UpdateRefreshTokenAsync(storedToken);
+
+        // 3. Release new tokens
+        var user = storedToken.User;
+        var roles = await _userRepository.GetUserRolesAsync(user);
+
+        var (newAccessToken, newJwtId) = _tokenService.GenerateAccessToken(user, roles);
+        var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+        // 5. Save new refresh token to database
+        var newRefreshTokenEntity = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = newRefreshToken,
+            JwtId = newJwtId,
+            IsUsed = false,
+            IsRevoked = false,
+            AddedDate = DateTime.UtcNow,
+            ExpiryDate = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("JwtSettings:RefreshTokenExpirationDays")),
+            UserId = user.Id
+        };
+
+        await _refreshTokenRepository.AddRefreshTokenAsync(newRefreshTokenEntity);
+        
+        return new AuthResponse
+        {
+            Success = true,
+            Message = "Token refreshed successfully",
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+        };
+    }
+
+    // Logout
+    public async Task<AuthResponse> LogoutAsync(string refreshToken)
+    {
+        var token = await _refreshTokenRepository.GetRefreshTokenByTokenAsync(refreshToken);
+
+        if (token == null)
+            throw new NotFoundException("Refresh token not found");
+        
+        token.IsRevoked = true;
+        token.IsUsed = true;
+        await _refreshTokenRepository.UpdateRefreshTokenAsync(token);
+
+        return new AuthResponse
+        {
+            Success = true,
+            Message = "Logged out successfully"
+        };
     }
 }

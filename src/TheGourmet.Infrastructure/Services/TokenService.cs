@@ -18,7 +18,7 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
     
-    public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
+    public (string, string) GenerateAccessToken(ApplicationUser user, IList<string> roles)
     {
         // 1. Lấy Private key từ file .pem
         var key = _rsaKeyProvider.GetPrivateKey();
@@ -26,12 +26,14 @@ public class TokenService : ITokenService
         // 2. Tạo thuật toán ký số với RSA SHA256
         var credentials = new SigningCredentials(new RsaSecurityKey(key), SecurityAlgorithms.RsaSha256);
 
+        // Sinh ID 
+        var jwtId = Guid.NewGuid().ToString();
         // 3. Tạo Claims cho token (thông tin lưu trong token)
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Jti, jwtId),
         };
 
         // Thêm role vào claims
@@ -53,7 +55,8 @@ public class TokenService : ITokenService
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        return tokenHandler.WriteToken(token);
+        var tokenString = tokenHandler.WriteToken(token);
+        return (tokenString, jwtId);
     }
 
     public string GenerateRefreshToken()

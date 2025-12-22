@@ -150,6 +150,9 @@ public static class DependencyInjection
         // Register Cookie Service
         services.AddHttpContextAccessor(); // Đăng ký để truy cập HTTP Context ngoài Controller
         services.AddScoped<ICookieService, CookieService>();
+
+        // Register RefreshToken Repository
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         return services;
     }
 }
