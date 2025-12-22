@@ -1,8 +1,10 @@
 namespace TheGourmet.Infrastructure.Services;
 
 using System.Threading.Tasks;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using TheGourmet.Application.Common.Events;
 using TheGourmet.Application.DTOs.Auth;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Interfaces;
@@ -17,9 +19,10 @@ public class AuthService : IAuthService
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     // DI UserManager of IdentityUser and TokenService
-    public AuthService(ITokenService tokenService, UserManager<ApplicationUser> userManager, IUserRepository userRepository, IEmailService emailService, IConfiguration configuration, IRefreshTokenRepository refreshTokenRepository)
+    public AuthService(ITokenService tokenService, UserManager<ApplicationUser> userManager, IUserRepository userRepository, IEmailService emailService, IConfiguration configuration, IRefreshTokenRepository refreshTokenRepository, IPublishEndpoint publishEndpoint)
     {
         _tokenService = tokenService;
         _userManager = userManager;
@@ -27,6 +30,7 @@ public class AuthService : IAuthService
         _emailService = emailService;
         _configuration = configuration;
         _refreshTokenRepository = refreshTokenRepository;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -74,9 +78,14 @@ public class AuthService : IAuthService
                 </body>
             </html>";
         
-        // Tạo luồng riêng gửi email để không làm chậm phản hồi API
-        _ = Task.Run(() => _emailService.SendEmailAsync(request.Email, emailSubject, emailBody));
-
+        // Publish event to send email
+        await _publishEndpoint.Publish(new UserRegisteredEvent
+        {
+            Email = request.Email,
+            Subject = emailSubject,
+            Body = emailBody
+        });
+        
         return new AuthResponse
         {
             Success = true,

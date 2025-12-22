@@ -15,6 +15,8 @@ using TheGourmet.Application.Common;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
+using MassTransit;
+using TheGourmet.Infrastructure.Consumer;
 
 namespace TheGourmet.Infrastructure;
 
@@ -57,6 +59,25 @@ public static class DependencyInjection
         services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<MailSettings>>().Value);
 
+        // config RabbitMQ
+        services.AddMassTransit(x =>
+        {
+            // Đăng ký Consumer để MassTransit biết class nào xử lý tin nhắn nào 
+            x.AddConsumer<SendEmailConsumer>();
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                // Kết nối đến RabbitMQ Docker
+                cfg.Host("localhost", "/", h =>
+                {
+                    h.Username("guest");
+                    h.Password("guest");
+                });
+                
+                // Tự động đặt tên Queue và gán Consumer vào Queue đó
+                cfg.ConfigureEndpoints(context);
+            });
+        });
         // setup redis
         services.AddStackExchangeRedisCache(options =>
         {
@@ -153,6 +174,8 @@ public static class DependencyInjection
 
         // Register RefreshToken Repository
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        
         return services;
     }
 }
