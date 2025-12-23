@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TheGourmet.Application.DTOs.Auth;
+namespace TheGourmet.Application.Features.Auth.Results;
 
 public class AuthResponse
 {

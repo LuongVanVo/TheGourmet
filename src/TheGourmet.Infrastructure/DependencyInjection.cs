@@ -164,8 +164,6 @@ public static class DependencyInjection
         
         // Register Repositories
         services.AddScoped<IUserRepository, UserRepository>();
-        // Register Auth Service
-        services.AddScoped<IAuthService, AuthService>();
         // Register Email Service
         services.AddTransient<IEmailService, EmailService>(); // Transient vì service này không giữ trạng thái, mỗi lần gọi tạo một instance mới
 

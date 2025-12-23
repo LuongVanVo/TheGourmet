@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using TheGourmet.Api.Middlewares;
+using TheGourmet.Application;
 using TheGourmet.Application.Interfaces;
 using TheGourmet.Domain.Entities.Identity;
 using TheGourmet.Infrastructure;
@@ -13,9 +14,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Connect Layer Application
+builder.Services.AddApplicationServices();
 // Connect Layer Infrastructure
 builder.Services.AddInfrastructure(builder.Configuration);
-
 
 var app = builder.Build();
 
