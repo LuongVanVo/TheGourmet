@@ -70,4 +70,14 @@ public class UserRepository : IUserRepository
     {
         return await _userManager.GeneratePasswordResetTokenAsync(user);
     }
+    // check isEmailConfirm
+    public async Task<bool> IsEmailConfirmedAsync(ApplicationUser user)
+    {
+        return await _userManager.IsEmailConfirmedAsync(user);
+    }
+    // Get user profile by id
+    public async Task<ApplicationUser?> GetUserProfileByIdAsync(string userId)
+    {
+        return await _userManager.FindByIdAsync(userId);
+    }
 }

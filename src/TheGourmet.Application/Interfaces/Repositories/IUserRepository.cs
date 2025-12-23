@@ -26,4 +26,9 @@ public interface IUserRepository
     Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string token, string newPassword);
     // generate password reset token
     Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user);
+    // check isEmailConfirm
+    Task<bool> IsEmailConfirmedAsync(ApplicationUser user);
+
+    // Get user profile by id
+    Task<ApplicationUser?> GetUserProfileByIdAsync(string userId);
 }

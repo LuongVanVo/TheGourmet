@@ -1,6 +1,13 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TheGourmet.Application.DTOs.Auth;
+using TheGourmet.Application.Features.Auth.Commands.ConfirmEmail;
+using TheGourmet.Application.Features.Auth.Commands.ForgotPassword;
+using TheGourmet.Application.Features.Auth.Commands.Login;
+using TheGourmet.Application.Features.Auth.Commands.Logout;
+using TheGourmet.Application.Features.Auth.Commands.RefreshToken;
+using TheGourmet.Application.Features.Auth.Commands.Register;
+using TheGourmet.Application.Features.Auth.Commands.ResetPassword;
 using TheGourmet.Application.Interfaces;
 
 namespace TheGourmet.Api.Controllers;
@@ -9,44 +16,35 @@ namespace TheGourmet.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
-    private readonly ILogger<AuthController> _logger;
     private readonly ICookieService _cookieService;
-
-    public AuthController(IAuthService authService, ILogger<AuthController> logger, ICookieService cookieService)
+    private readonly IMediator _mediator;
+    public AuthController(ICookieService cookieService, IMediator mediator)
     {
-        _authService = authService;
-        _logger = logger;
         _cookieService = cookieService;
+        _mediator = mediator;
     }
 
     // register endpoint
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
-        var response = await _authService.RegisterAsync(request);
+        var response = await _mediator.Send(command);
         return Ok(response);
     }
 
     // active account endpoint
     [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+    public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailCommand command)
     {
-        // Validate input
-        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
-        {
-            return BadRequest("UserId and token are required");
-        }
-
-        var response = await _authService.ConfirmEmailAsync(userId, token);
+        var response = await _mediator.Send(command);
         return Ok(response);
     }
 
     // login endpoint
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
-        var loginResult = await _authService.LoginAsync(request);
+        var loginResult = await _mediator.Send(command);
 
         // Set cookies
         _cookieService.SetAuthCookies(loginResult.AccessToken ?? string.Empty, loginResult.RefreshToken ?? string.Empty);
@@ -60,11 +58,11 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {   
         var refreshToken = Request.Cookies["refresh_token"];
-        if (string.IsNullOrWhiteSpace(refreshToken))
+        var command = new LogoutCommand
         {
-            return BadRequest(new { Message = "Refresh token is missing" });
-        }
-        var response = await _authService.LogoutAsync(refreshToken);
+            RefreshToken = refreshToken ?? string.Empty,
+        };
+        var response = await _mediator.Send(command);
 
         // Remove cookies
         _cookieService.RemoveAuthCookies();
@@ -77,12 +75,13 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> RefreshToken()
     {
         var refreshToken = Request.Cookies["refresh_token"];
-        if (string.IsNullOrEmpty(refreshToken))
-        {
-            return Unauthorized(new { Message = "Refresh token is missing" });
-        }
 
-        var response = await _authService.RefreshTokenAsync(refreshToken);
+        var command = new RefreshTokenCommand
+        {
+            Token = refreshToken ?? string.Empty
+        };
+
+        var response = await _mediator.Send(command);
         _cookieService.SetAuthCookies(response.AccessToken ?? string.Empty, response.RefreshToken ?? string.Empty);
         return Ok(response);
     }
@@ -170,9 +169,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
     {
-        var response = await _authService.ForgotPasswordAsync(request);
+        var response = await _mediator.Send(command);
 
         if (!response.Success)
         {
@@ -180,10 +179,11 @@ public class AuthController : ControllerBase
         }
         return Ok(response);
     }
+
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
     {
-        var response = await _authService.ResetPasswordAsync(request);
+        var response = await _mediator.Send(command);
 
         if (!response.Success)
         {
