@@ -174,7 +174,8 @@ public static class DependencyInjection
         // Register RefreshToken Repository
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-        
+        // Register Category Repository
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
         return services;
     }
 }

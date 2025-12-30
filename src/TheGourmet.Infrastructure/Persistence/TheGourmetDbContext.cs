@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TheGourmet.Domain.Entities;
 using TheGourmet.Domain.Entities.Identity;
 
 namespace TheGourmet.Infrastructure.Persistence;
@@ -12,6 +13,7 @@ public class TheGourmetDbContext : IdentityDbContext<ApplicationUser, Applicatio
         
     }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Category> Categories { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
