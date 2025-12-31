@@ -176,6 +176,9 @@ public static class DependencyInjection
 
         // Register Category Repository
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        
+        // Register Product Repository
+        services.AddScoped<IProductRepository, ProductRepository>();
         return services;
     }
 }

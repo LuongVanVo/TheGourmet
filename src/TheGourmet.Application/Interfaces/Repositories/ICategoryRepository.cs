@@ -12,4 +12,7 @@ public interface ICategoryRepository
     
     // get all categories
     Task<List<Category>> GetAllCategoriesAsync();
+    
+    // get category by id
+    Task<Category?> GetCategoryByIdAsync(Guid id);
 }

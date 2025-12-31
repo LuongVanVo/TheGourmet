@@ -9,19 +9,13 @@ namespace TheGourmet.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CategoryController : ControllerBase
+public class CategoryController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    public CategoryController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateCategoryCommand categoryCommand)
     {
-        var result =  await _mediator.Send(categoryCommand);
+        var result =  await mediator.Send(categoryCommand);
         return Ok(result);
     }
     
@@ -30,7 +24,7 @@ public class CategoryController : ControllerBase
     public async Task<ActionResult<IEnumerable<CategoryResponse>>> GetCategories()
     {
         var query = new GetAllCategoriesQuery();
-        var result = await _mediator.Send(query);
+        var result = await mediator.Send(query);
         
         return Ok(result);
     }

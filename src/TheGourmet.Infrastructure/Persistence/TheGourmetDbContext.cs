@@ -14,10 +14,14 @@ public class TheGourmetDbContext : IdentityDbContext<ApplicationUser, Applicatio
     }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Product> Products { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        
+        // Kích hoạt extension unaccent cho PostgreSQL để hỗ trợ tìm kiếm không dấu
+        builder.HasPostgresExtension("unaccent");
 
         // Load các config khác (nếu có)
         builder.ApplyConfigurationsFromAssembly(typeof(TheGourmetDbContext).Assembly);

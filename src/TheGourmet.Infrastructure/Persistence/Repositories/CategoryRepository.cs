@@ -27,4 +27,10 @@ public class CategoryRepository(TheGourmetDbContext dbContext) : ICategoryReposi
     {
         return await _dbContext.Categories.ToListAsync();
     }
+    
+    // get category by id
+    public async Task<Category?> GetCategoryByIdAsync(Guid id)
+    {
+        return await _dbContext.Categories.FindAsync(id);
+    }
 }
