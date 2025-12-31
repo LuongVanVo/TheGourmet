@@ -19,6 +19,9 @@ public class TheGourmetDbContext : IdentityDbContext<ApplicationUser, Applicatio
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        
+        // Kích hoạt extension unaccent cho PostgreSQL để hỗ trợ tìm kiếm không dấu
+        builder.HasPostgresExtension("unaccent");
 
         // Load các config khác (nếu có)
         builder.ApplyConfigurationsFromAssembly(typeof(TheGourmetDbContext).Assembly);

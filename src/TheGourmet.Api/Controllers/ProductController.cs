@@ -1,7 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TheGourmet.Application.Common.Models;
 using TheGourmet.Application.Features.Products.Commands.CreateProduct;
+using TheGourmet.Application.Features.Products.Queries.GetProductsWithPagination;
+using TheGourmet.Application.Features.Products.Results;
 
 namespace TheGourmet.Api.Controllers;
 
@@ -15,5 +18,13 @@ public class ProductController(IMediator mediator) : ControllerBase
     {
         var result = await mediator.Send(command);
         return Ok(result);
+    }
+    
+    // Get products with pagination
+    [HttpGet]
+    public async Task<ActionResult<PaginatedList<GetProductsWithPaginationResponse>>> GetProducts(
+        [FromQuery] GetProductsWithPaginationQuery query)
+    {
+        return await mediator.Send(query);
     }
 }

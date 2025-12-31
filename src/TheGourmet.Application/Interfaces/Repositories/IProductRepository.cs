@@ -6,4 +6,7 @@ public interface IProductRepository
 {
     // add product in DB
     Task<bool> AddProductAsync(Product product);
+    
+    // init query 
+    IQueryable<Product> GetProductsQuery(string? searchTerm, Guid? categoryId);
 }

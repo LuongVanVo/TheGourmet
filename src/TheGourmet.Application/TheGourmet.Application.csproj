@@ -12,10 +12,6 @@
     <PackageReference Include="MediatR" Version="14.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Products\Queries\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
