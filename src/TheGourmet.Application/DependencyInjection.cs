@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
 using TheGourmet.Application.Common.Behaviors;
 using MediatR;
+using TheGourmet.Application.Common.ExternalServices;
+using TheGourmet.Application.Interfaces;
 
 namespace TheGourmet.Application
 {
@@ -21,6 +23,9 @@ namespace TheGourmet.Application
 
             // Register Pipeline Behaviors
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            
+            // Register Background Task 
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
             return services;
         }

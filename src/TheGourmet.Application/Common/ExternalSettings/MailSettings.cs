@@ -1,4 +1,4 @@
-namespace TheGourmet.Application.Common
+namespace TheGourmet.Application.Common.ExternalSettings
 {
     public class MailSettings
     {
