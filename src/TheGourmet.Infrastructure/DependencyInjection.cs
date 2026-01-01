@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TheGourmet.Application.Interfaces.Repositories;
 using TheGourmet.Infrastructure.Persistence.Repositories;
-using TheGourmet.Application.Common;
+using TheGourmet.Application.Common.ExternalSettings;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
@@ -85,6 +85,10 @@ public static class DependencyInjection
             options.Configuration = configuration.GetConnectionString("RedisConnection");
             options.InstanceName = "TheGourmet_";
         });
+        
+        // Cloudinary settings
+        services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
+        services.AddScoped<ICloudinaryService, CloudinaryService>();
 
         // setup RSA keys
         var rsaKeyProvider = new RsaKeyProvider();
@@ -179,6 +183,8 @@ public static class DependencyInjection
         
         // Register Product Repository
         services.AddScoped<IProductRepository, ProductRepository>();
+
+        services.AddHostedService<QueuedHostedService>();
         return services;
     }
 }

@@ -18,7 +18,7 @@ public class ProductController(IMediator mediator) : ControllerBase
 {
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    public async Task<IActionResult> AddProduct([FromBody] CreateProductCommand command)
+    public async Task<IActionResult> AddProduct([FromForm] CreateProductCommand command)
     {
         var result = await mediator.Send(command);
         return Ok(result);

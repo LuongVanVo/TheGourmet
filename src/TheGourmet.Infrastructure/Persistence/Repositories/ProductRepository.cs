@@ -31,10 +31,11 @@ public class ProductRepository(TheGourmetDbContext dbContext) : IProductReposito
         // filter by search term
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var keyword = searchTerm.Trim();
+            // Unaccent keyword and use ILike for case-insensitive search
+            var normalizedKeyword = $"%{searchTerm.Trim()}%";
             query = query.Where(x => EF.Functions.ILike(
                 EF.Functions.Unaccent(x.Name), 
-                EF.Functions.Unaccent($"%{keyword}%")
+                EF.Functions.Unaccent(normalizedKeyword)
             ));
         }
         

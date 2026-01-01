@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using TheGourmet.Application.Features.Products.Results;
 
 namespace TheGourmet.Application.Features.Products.Commands.CreateProduct;
@@ -10,6 +11,6 @@ public class CreateProductCommand : IRequest<CreateProductResponse>
     public decimal Price { get; set; }
     public decimal? OriginalPrice { get; set; }
     public int StockQuantity { get; set; }
-    public string? ImageUrl { get; set; }
+    public IFormFile? ImageFile { get; set; }
     public Guid CategoryId { get; set; }
 }
