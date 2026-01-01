@@ -19,6 +19,7 @@ public class ProductRepository(TheGourmetDbContext dbContext) : IProductReposito
     {
         var query = dbContext.Products
             .Include(p => p.Category)
+            .Where(p => p.IsActive == true)
             .AsNoTracking();
 
         // filter by category id
@@ -38,5 +39,37 @@ public class ProductRepository(TheGourmetDbContext dbContext) : IProductReposito
         }
         
         return query;
+    }
+    
+    // get product by id
+    public async Task<Product?> GetProductByIdAsync(Guid id)
+    {
+        return await dbContext.Products
+            .Include(p => p.Category)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id && p.IsActive == true);
+    }
+    
+    // get product by id for admin
+    public async Task<Product?> GetProductByIdForAdminAsync(Guid id)
+    {
+        return await dbContext.Products
+            .Include(p => p.Category)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+    
+    // update product in DB
+    public async Task UpdateProductAsync(Product product)
+    {
+        dbContext.Products.Update(product);
+        await dbContext.SaveChangesAsync();
+    }
+    
+    // delete product in DB
+    public async Task DeleteProductAsync(Product product)
+    {
+        dbContext.Products.Remove(product);
+        await dbContext.SaveChangesAsync();
     }
 }

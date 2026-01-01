@@ -9,25 +9,20 @@ using TheGourmet.Application.Interfaces.Repositories;
 
 namespace TheGourmet.Application.Features.Auth.Queries.GetUserProfile
 {
-    public class GetUserProfileHandler : IRequestHandler<GetUserProfileQuery, UserProfileRespone>
+    public class GetUserProfileHandler(IUserRepository userRepository)
+        : IRequestHandler<GetUserProfileQuery, UserProfileRespone>
     {
-        private readonly IUserRepository _userRepository;
-        public GetUserProfileHandler(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
-
         public async Task<UserProfileRespone> Handle(GetUserProfileQuery command, CancellationToken cancellationToken)
         {
             // find user by id
-            var foundUser = await _userRepository.GetUserProfileByIdAsync(command.UserId);
+            var foundUser = await userRepository.GetUserProfileByIdAsync(command.UserId);
             if (foundUser == null)
             {
                 throw new NotFoundException("User not found");
             }
 
             // get user roles
-            var roles = await _userRepository.GetUserRolesAsync(foundUser);
+            var roles = await userRepository.GetUserRolesAsync(foundUser);
 
             return new UserProfileRespone
             {
