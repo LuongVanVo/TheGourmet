@@ -1,4 +1,5 @@
-﻿using TheGourmet.Domain.Entities;
+﻿using TheGourmet.Application.Common.Models;
+using TheGourmet.Domain.Entities;
 
 namespace TheGourmet.Application.Interfaces.Repositories;
 
@@ -8,7 +9,7 @@ public interface IProductRepository
     Task<bool> AddProductAsync(Product product);
     
     // init query 
-    IQueryable<Product> GetProductsQuery(string? searchTerm, Guid? categoryId);
+    IQueryable<Product> GetProductsQuery(ProductQueryParameters parameters);
     
     // get product by id
     Task<Product?> GetProductByIdAsync(Guid id);

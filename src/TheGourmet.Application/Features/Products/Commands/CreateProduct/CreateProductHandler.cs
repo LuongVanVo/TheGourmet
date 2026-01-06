@@ -12,7 +12,6 @@ namespace TheGourmet.Application.Features.Products.Commands.CreateProduct;
 public class CreateProductHandler(
     ICategoryRepository categoryRepository, 
     IProductRepository productRepository, 
-    ICloudinaryService cloudinaryService, 
     IBackgroundTaskQueue backgroundTaskQueue,
     IServiceScopeFactory serviceScopeFactory)
     : IRequestHandler<CreateProductCommand, CreateProductResponse>
