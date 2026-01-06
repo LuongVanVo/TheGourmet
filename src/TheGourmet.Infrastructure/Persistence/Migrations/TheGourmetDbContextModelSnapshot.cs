@@ -160,10 +160,15 @@ namespace TheGourmet.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
+
+                    b.HasIndex("ParentId");
 
                     b.ToTable("Categories", (string)null);
                 });
@@ -426,6 +431,15 @@ namespace TheGourmet.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TheGourmet.Domain.Entities.Category", b =>
+                {
+                    b.HasOne("TheGourmet.Domain.Entities.Category", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId");
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("TheGourmet.Domain.Entities.Identity.RefreshToken", b =>
                 {
                     b.HasOne("TheGourmet.Domain.Entities.Identity.ApplicationUser", "User")
@@ -450,6 +464,8 @@ namespace TheGourmet.Infrastructure.Migrations
 
             modelBuilder.Entity("TheGourmet.Domain.Entities.Category", b =>
                 {
+                    b.Navigation("Children");
+
                     b.Navigation("Products");
                 });
 #pragma warning restore 612, 618

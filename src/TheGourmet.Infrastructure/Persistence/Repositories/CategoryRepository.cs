@@ -48,4 +48,11 @@ public class CategoryRepository(TheGourmetDbContext dbContext) : ICategoryReposi
         _dbContext.Categories.Update(category);
         return _dbContext.SaveChangesAsync();
     }
+    
+    // no tracking query for categories
+    public IQueryable<Category> GetAllNoTrackingAsync()
+    {
+        return _dbContext.Categories
+            .AsNoTracking();
+    }
 }

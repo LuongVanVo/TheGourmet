@@ -21,4 +21,7 @@ public interface ICategoryRepository
     
     // delete category in DB
     Task SoftDeleteCategoryAsync(Category category);
+    
+    // No tracking query for categories
+    IQueryable<Category> GetAllNoTrackingAsync();
 }

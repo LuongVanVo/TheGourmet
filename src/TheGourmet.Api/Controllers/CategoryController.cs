@@ -5,6 +5,7 @@ using TheGourmet.Application.Features.Categories.Commands.CreateCategory;
 using TheGourmet.Application.Features.Categories.Commands.DeleteCategory;
 using TheGourmet.Application.Features.Categories.Commands.UpdateCategory;
 using TheGourmet.Application.Features.Categories.Queries.GetAllCategories;
+using TheGourmet.Application.Features.Categories.Queries.GetCategoryTree;
 using TheGourmet.Application.Features.Categories.Results;
 
 namespace TheGourmet.Api.Controllers;
@@ -48,6 +49,15 @@ public class CategoryController(IMediator mediator) : ControllerBase
     public async Task<ActionResult> DeleteCategory([FromRoute]DeleteCategoryCommand command)
     {
         var result = await mediator.Send(command);
+        return Ok(result);
+    }
+    
+    // get category tree 
+    [HttpGet("tree")]
+    public async Task<IActionResult> GetCategoryTree()
+    {
+        var query = new GetCategoryTreeQuery();
+        var result = await mediator.Send(query);
         return Ok(result);
     }
 }
