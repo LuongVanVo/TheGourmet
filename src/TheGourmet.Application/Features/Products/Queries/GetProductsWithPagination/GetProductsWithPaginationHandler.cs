@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using TheGourmet.Application.Common.Models;
+using TheGourmet.Application.Common.Models;
 using TheGourmet.Application.Features.Products.Results;
 using TheGourmet.Application.Interfaces.Repositories;
 
@@ -12,10 +13,16 @@ public class GetProductsWithPaginationHandler(IProductRepository productReposito
 
     public Task<PaginatedList<GetProductsWithPaginationResponse>> Handle(GetProductsWithPaginationQuery request, CancellationToken cancellationToken)
     {
-        var query = _productRepository.GetProductsQuery(request.SearchTerm, request.CategoryId);
+        var parameters = new ProductQueryParameters
+        {
+            SearchTerm = request.SearchTerm,
+            CategoryId = request.CategoryId,
+            MinPrice = request.MinPrice,
+            MaxPrice = request.MaxPrice,
+            Sort = request.Sort,
+        };
         
-        // apply sorting (expand for more sorting options)
-        query = query.OrderByDescending(x => x.Created);
+        var query = _productRepository.GetProductsQuery(parameters);
         
         // map to response
         var mappedQuery = query.Select(x => new GetProductsWithPaginationResponse
