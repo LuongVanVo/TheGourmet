@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using TheGourmet.Application.Common.Models;
-using TheGourmet.Application.Common.Models;
 using TheGourmet.Application.Features.Products.Results;
 using TheGourmet.Application.Interfaces.Repositories;
 

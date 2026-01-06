@@ -15,4 +15,13 @@ public interface ICategoryRepository
     
     // get category by id
     Task<Category?> GetCategoryByIdAsync(Guid id);
+    
+    // update category in DB
+    Task UpdateCategoryAsync(Category category);
+    
+    // delete category in DB
+    Task SoftDeleteCategoryAsync(Category category);
+    
+    // No tracking query for categories
+    IQueryable<Category> GetAllNoTrackingAsync();
 }

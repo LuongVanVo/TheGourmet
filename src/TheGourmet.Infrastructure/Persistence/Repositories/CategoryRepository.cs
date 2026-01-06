@@ -25,12 +25,34 @@ public class CategoryRepository(TheGourmetDbContext dbContext) : ICategoryReposi
     // get all categories
     public async Task<List<Category>> GetAllCategoriesAsync()
     {
-        return await _dbContext.Categories.ToListAsync();
+        return await _dbContext.Categories.Where(c => c.IsDeleted == false).ToListAsync();
     }
     
     // get category by id
     public async Task<Category?> GetCategoryByIdAsync(Guid id)
     {
         return await _dbContext.Categories.FindAsync(id);
+    }
+    
+    // update category
+    public async Task UpdateCategoryAsync(Category category)
+    {
+        _dbContext.Categories.Update(category);
+        await _dbContext.SaveChangesAsync();
+    }
+    
+    // delete category
+    public Task SoftDeleteCategoryAsync(Category category)
+    {
+        category.IsDeleted = true;
+        _dbContext.Categories.Update(category);
+        return _dbContext.SaveChangesAsync();
+    }
+    
+    // no tracking query for categories
+    public IQueryable<Category> GetAllNoTrackingAsync()
+    {
+        return _dbContext.Categories
+            .AsNoTracking();
     }
 }
