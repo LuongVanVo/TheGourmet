@@ -1,14 +1,16 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Features.Categories.Results;
 using TheGourmet.Application.Interfaces.Repositories;
 
 namespace TheGourmet.Application.Features.Categories.Commands.UpdateCategory;
 
-public class UpdateCategoryHandler(ICategoryRepository categoryRepository)
+public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IMapper mapper)
     : IRequestHandler<UpdateCategoryCommand, UpdateCategoryResponse>
 {
     private readonly ICategoryRepository _categoryRepository = categoryRepository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<UpdateCategoryResponse> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
@@ -19,19 +21,11 @@ public class UpdateCategoryHandler(ICategoryRepository categoryRepository)
             throw new NotFoundException("Category not found");
         }
         
-        // update category properties
-        if (!string.IsNullOrWhiteSpace(request.Name))
-        {
-            category.Name = request.Name;
-        }
-        if (!string.IsNullOrWhiteSpace(request.Description))
-        {
-            category.Description = request.Description;
-        }
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl))
-        {
-            category.ImageUrl = request.ImageUrl;
-        }
+        // map updated fields
+        mapper.Map(request, category);
+        
+        // set audit fields
+        category.LastModified = DateTime.UtcNow;
         
         // save changes
         await _categoryRepository.UpdateCategoryAsync(category);
