@@ -1,4 +1,5 @@
-﻿using MassTransit.Contracts;
+﻿using AutoMapper;
+using MassTransit.Contracts;
 using MediatR;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Features.Products.Results;
@@ -6,10 +7,11 @@ using TheGourmet.Application.Interfaces.Repositories;
 
 namespace TheGourmet.Application.Features.Products.Commands.UpdateProduct;
 
-public class UpdateProductHandler(IProductRepository productRepository)
+public class UpdateProductHandler(IProductRepository productRepository, IMapper mapper)
     : IRequestHandler<UpdateProductCommand, ProductResponse>
 {
     private readonly IProductRepository _productRepository = productRepository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<ProductResponse> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
@@ -20,27 +22,11 @@ public class UpdateProductHandler(IProductRepository productRepository)
             throw new NotFoundException("Product not found");
         }
         
-        // update product properties
-        if (!string.IsNullOrWhiteSpace((request.Name)))
-            product.Name = request.Name;
+        // map updated fields
+        mapper.Map(request, product);
         
-        if (!string.IsNullOrWhiteSpace((request.Description)))
-            product.Description = request.Description;
-        
-        if (request.Price.HasValue) 
-            product.Price = request.Price.Value;
-         
-        if (request.OriginalPrice.HasValue) 
-            product.OriginalPrice = request.OriginalPrice.Value;
-        
-        if (request.StockQuantity.HasValue)
-            product.StockQuantity = request.StockQuantity.Value;
-        
-        if (!string.IsNullOrWhiteSpace((request.ImageUrl)))
-            product.ImageUrl = request.ImageUrl;
-        
-        if (request.CategoryId.HasValue)
-            product.CategoryId = request.CategoryId.Value;
+        // set audit fields
+        product.LastModified = DateTime.UtcNow;
         
         // save changes
         await _productRepository.UpdateProductAsync(product);

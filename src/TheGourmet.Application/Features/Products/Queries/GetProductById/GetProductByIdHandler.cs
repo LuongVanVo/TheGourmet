@@ -1,16 +1,23 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using Microsoft.Extensions.Logging;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Features.Products.Results;
 using TheGourmet.Application.Interfaces.Repositories;
+using TheGourmet.Domain.Entities;
 
 namespace TheGourmet.Application.Features.Products.Queries.GetProductById;
 
 public class GetProductByIdHandler : IRequestHandler<GetProductByIdQuery, GetProductByIdResponse>
 {
     private readonly IProductRepository _productRepository;
-    public GetProductByIdHandler(IProductRepository productRepository)
+    private readonly IMapper _mapper;
+    private readonly ILogger<GetProductByIdHandler> _logger;
+    public GetProductByIdHandler(IProductRepository productRepository, IMapper mapper, ILogger<GetProductByIdHandler> logger)
     {
         _productRepository = productRepository;
+        _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<GetProductByIdResponse> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
@@ -18,20 +25,17 @@ public class GetProductByIdHandler : IRequestHandler<GetProductByIdQuery, GetPro
         var product = await _productRepository.GetProductByIdAsync(request.Id);
         if (product == null)
         {
-            throw new NotFoundException($"Not found product with id {request.Id}");
+            _logger.LogWarning("Product with id {ProductId} not found", request.Id);
+            throw new NotFoundException(nameof(Product), request.Id);
         }
 
-        return new GetProductByIdResponse
+        if (!product.IsActive)
         {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            Price = product.Price,
-            OriginalPrice = product.OriginalPrice ?? 0,
-            StockQuantity = product.StockQuantity,
-            ImageUrl = product.ImageUrl ?? string.Empty,
-            CategoryId = product.CategoryId,
-            CategoryName = product.Category.Name
-        };
+            _logger.LogWarning("Product with id {ProductId} is inactive", request.Id);
+            throw new NotFoundException(nameof(Product), request.Id);
+        }
+        
+        var response = _mapper.Map<GetProductByIdResponse>(product);
+        return response;    
     }
 }

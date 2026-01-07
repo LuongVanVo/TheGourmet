@@ -14,7 +14,10 @@ namespace TheGourmet.Application
         {
             // Lấy thông tin của toàn bộ project hiện tại
             var assembly = Assembly.GetExecutingAssembly();
-
+            
+            // Register AutoMapper
+            services.AddAutoMapper(_ => { }, assembly);
+            
             // Register MediatR
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
 
