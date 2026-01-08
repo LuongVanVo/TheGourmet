@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using TheGourmet.Application.DTOs;
+using TheGourmet.Application.DTOs.Category;
 using TheGourmet.Application.Interfaces.Repositories;
 using TheGourmet.Domain.Entities;
 

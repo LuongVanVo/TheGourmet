@@ -1,4 +1,4 @@
-﻿namespace TheGourmet.Application.DTOs;
+﻿namespace TheGourmet.Application.DTOs.Category;
 
 public class CategoryTreeDto
 {
