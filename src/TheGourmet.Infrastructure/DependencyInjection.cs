@@ -184,7 +184,11 @@ public static class DependencyInjection
         // Register Product Repository
         services.AddScoped<IProductRepository, ProductRepository>();
 
+        // Register Background Task Queue
         services.AddHostedService<QueuedHostedService>();
+        
+        // Register Cart Repository
+        services.AddScoped<ICartRepository, CartRepository>();
         return services;
     }
 }

@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using TheGourmet.Application.DTOs;
+using TheGourmet.Application.DTOs.Category;
 
 namespace TheGourmet.Application.Features.Categories.Queries.GetCategoryTree;
 
