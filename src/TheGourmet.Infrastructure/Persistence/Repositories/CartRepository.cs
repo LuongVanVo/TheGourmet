@@ -5,6 +5,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using TheGourmet.Application.DTOs.Cart;
 using TheGourmet.Application.Interfaces.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using TheGourmet.Application.Interfaces;
 using TheGourmet.Domain.Entities;
 
 namespace TheGourmet.Infrastructure.Persistence.Repositories;
@@ -14,14 +16,18 @@ public class CartRepository : ICartRepository
     private readonly IDistributedCache _redisCache;
     private readonly TheGourmetDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly IBackgroundTaskQueue _backgroundTaskQueue;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<CartRepository> _logger;
     
-    public CartRepository(IDistributedCache redisCache, TheGourmetDbContext dbContext, IMapper mapper, IServiceScopeFactory scopeFactory)
+    public CartRepository(IDistributedCache redisCache, TheGourmetDbContext dbContext, IMapper mapper, IServiceScopeFactory scopeFactory, IBackgroundTaskQueue backgroundTaskQueue, ILogger<CartRepository> logger)
     {
         _redisCache = redisCache;
         _dbContext = dbContext;
         _mapper = mapper;
         _scopeFactory = scopeFactory;
+        _backgroundTaskQueue = backgroundTaskQueue;
+        _logger = logger;
     }
     
     // Get cart by user ID
@@ -69,9 +75,9 @@ public class CartRepository : ICartRepository
         await SaveToRedisAsync(userId, cartDto);
         
         // sync data to database
-        _ = Task.Run(async () =>
+        _backgroundTaskQueue.QueueBackgroundWorkItem(async token =>
         {
-            await SyncToPostgresBackground(userId, cartDto);
+            await SyncToPostgresBackground(userId, cartDto, token);
         });
     }
     
@@ -115,42 +121,57 @@ public class CartRepository : ICartRepository
     }
     
     // Sync from Redis to Database
-    private async Task SyncToPostgresBackground(Guid userId, CartDto cartDto)
+    private async Task SyncToPostgresBackground(Guid userId, CartDto cartDto, CancellationToken token)
     {
         try
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<TheGourmetDbContext>();
+
+            var dbCart = await dbContext.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.UserId == userId, token);
+
+            if (dbCart == null)
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<TheGourmetDbContext>();
-                var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
-
-                var dbCart = await dbContext.Carts
-                    .Include(c => c.Items)
-                    .FirstOrDefaultAsync(c => c.UserId == userId);
-
-                if (dbCart == null)
+                // Tạo cart mới
+                dbCart = new Cart
                 {
-                    dbCart = new Cart { UserId = userId };
-                    dbContext.Carts.Add(dbCart);
-                }
-                else
-                {
-                    dbContext.CartItems.RemoveRange(dbCart.Items);
-                }
-
-                foreach (var itemDto in cartDto.Items)
-                {
-                    var cartItem = mapper.Map<CartItem>(itemDto);
-                    cartItem.CartId = dbCart.Id;
-                    dbCart.Items.Add(cartItem);
-                }
-
-                await dbContext.SaveChangesAsync();
+                    UserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                dbContext.Carts.Add(dbCart);
+                await dbContext.SaveChangesAsync(token);
             }
+
+            // Remove tất cả các items hiện có trong cart
+            if (dbCart.Items.Any())
+            {
+                dbContext.CartItems.RemoveRange(dbCart.Items);
+                await dbContext.SaveChangesAsync(token);
+            }
+            
+            foreach (var itemDto in cartDto.Items)
+            {
+                var cartItem = new CartItem
+                {
+                    Id = Guid.NewGuid(),
+                    CartId = dbCart.Id, 
+                    ProductId = itemDto.ProductId,
+                    Quantity = itemDto.Quantity,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                dbContext.CartItems.Add(cartItem);
+            }
+
+            await dbContext.SaveChangesAsync(token);
+            _logger.LogInformation("Successfully synced cart for user {UserId} to PostgreSQL", userId);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error syncing cart to Postgres: {ex.Message}");
+            _logger.LogError(ex, "Error syncing cart for user {UserId} to PostgreSQL", userId);
         }
     }
 }
