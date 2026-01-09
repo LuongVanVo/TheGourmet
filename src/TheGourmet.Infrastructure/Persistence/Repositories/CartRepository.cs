@@ -154,15 +154,8 @@ public class CartRepository : ICartRepository
             
             foreach (var itemDto in cartDto.Items)
             {
-                var cartItem = new CartItem
-                {
-                    Id = Guid.NewGuid(),
-                    CartId = dbCart.Id, 
-                    ProductId = itemDto.ProductId,
-                    Quantity = itemDto.Quantity,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                var cartItem = _mapper.Map<CartItem>(itemDto);
+                cartItem.CartId = dbCart.Id;
                 dbContext.CartItems.Add(cartItem);
             }
 
