@@ -21,4 +21,7 @@ public interface IProductRepository
     
     // delete product in DB
     Task DeleteProductAsync(Product product);
+    
+    // Transaction order
+    Task<bool> DecreaseStockAtomicAsync(Guid productId, int quantity);
 }

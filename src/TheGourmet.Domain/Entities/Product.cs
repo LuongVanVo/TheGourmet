@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using TheGourmet.Domain.Common;
 
 namespace TheGourmet.Domain.Entities;
@@ -17,6 +18,10 @@ public class Product : BaseAuditableEntity
     public int StockQuantity { get; set; } // Số lượng tồn kho
     public string? ImageUrl { get; set; }
     public bool IsActive { get; set; } = true;
+    
+    // Verion for concurrency control
+    [Timestamp]
+    public uint RowVersion { get; set; }
     
     // Relationships
     public Guid CategoryId { get; set; }

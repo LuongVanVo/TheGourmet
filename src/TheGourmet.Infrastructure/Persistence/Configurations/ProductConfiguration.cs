@@ -18,5 +18,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .WithMany(c => c.Products)
             .HasForeignKey(p => p.CategoryId)
             .OnDelete(DeleteBehavior.Cascade); // Nếu một Category bị xóa, tất cả Products liên quan cũng sẽ bị xóa
+
+        builder.Property(p => p.RowVersion)
+            .IsRowVersion(); // Báo hiệu đây là ConcurrencyToken (dùng cho optimistic concurrency control)
     }
 }
