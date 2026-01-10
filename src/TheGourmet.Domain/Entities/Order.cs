@@ -22,7 +22,13 @@ public class Order
     public DateTime PaymentExpiredAt { get; set; }
     [Column(TypeName = "decimal(18,2)")]
     public decimal TotalAmount { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal ShippingFee { get; set; }
     public OrderStatus Status { get; set; }
+    public string ReceiverName { get; set; } = string.Empty;
+    public string ReceiverPhone { get; set; } = string.Empty;
+    public string ShippingAddress { get; set; } = string.Empty;
+    public string? Note { get; set; }
     
     // Code transaction from payment gateway (VNPay, MoMo, etc)
     public string? PaymentTransactionsId { get; set; }

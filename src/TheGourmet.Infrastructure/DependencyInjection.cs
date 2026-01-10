@@ -189,6 +189,10 @@ public static class DependencyInjection
         
         // Register Cart Repository
         services.AddScoped<ICartRepository, CartRepository>();
+        
+        // Register UnitOfWork
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
         return services;
     }
 }

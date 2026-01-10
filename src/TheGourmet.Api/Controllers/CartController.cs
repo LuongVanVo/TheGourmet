@@ -1,8 +1,7 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Carts.Commands.AddItemToCart;
 using TheGourmet.Application.Features.Carts.Commands.ClearItemToCart;
 using TheGourmet.Application.Features.Carts.Commands.UpdateQuantityProductInCart;
@@ -24,7 +23,7 @@ public class CartController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetCart()
     {
-        var userId = GetCurrentUserId();
+        var userId = User.GetCurrentUserId();
         var query = new GetCartQuery(userId);
         var result = await _mediator.Send(query);
         return Ok(result);
@@ -33,20 +32,9 @@ public class CartController : ControllerBase
     [HttpPost("items")]
     public async Task<IActionResult> AddItemToCart([FromBody] AddItemToCartCommand command)
     {
-        command.UserId = GetCurrentUserId();
+        command.UserId = User.GetCurrentUserId();
         var result = await _mediator.Send(command);
         return Ok(result);
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) 
-                          ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-    
-        if (string.IsNullOrEmpty(userIdClaim))
-            throw new UnauthorizedAccessException("User ID not found in token");
-    
-        return Guid.Parse(userIdClaim);
     }
     
     // update quantity product item in cart
@@ -54,7 +42,7 @@ public class CartController : ControllerBase
     public async Task<IActionResult> UpdateItemProductQuantity([FromRoute] Guid productId, [FromBody] UpdateQuantityProductInCartCommand command)
     {
         command.ProductId = productId;
-        command.UserId = GetCurrentUserId();
+        command.UserId = User.GetCurrentUserId();
 
         var result = await _mediator.Send(command);
         return Ok(result);
@@ -66,7 +54,7 @@ public class CartController : ControllerBase
     {
         var command = new UpdateQuantityProductInCartCommand
         {
-            UserId = GetCurrentUserId(),
+            UserId = User.GetCurrentUserId(),
             ProductId = productId
         };
 
@@ -80,7 +68,7 @@ public class CartController : ControllerBase
     {
         var command = new ClearItemToCartCommand
         {
-            UserId = GetCurrentUserId()
+            UserId = User.GetCurrentUserId()
         };
         var result = await _mediator.Send(command);
         return Ok(result);

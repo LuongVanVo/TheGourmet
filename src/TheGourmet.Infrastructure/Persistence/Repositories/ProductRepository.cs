@@ -104,4 +104,15 @@ public class ProductRepository(TheGourmetDbContext dbContext) : IProductReposito
         dbContext.Products.Remove(product);
         await dbContext.SaveChangesAsync();
     }
+    
+    // transaction for product
+    public async Task<bool> DecreaseStockAtomicAsync(Guid productId, int quantity)
+    {
+        int rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync($@"
+            UPDATE ""Products"" 
+            SET ""StockQuantity"" = ""StockQuantity"" - {quantity}
+            WHERE ""Id"" = {productId} AND ""StockQuantity"" >= {quantity}");
+
+        return rowsAffected > 0;
+    }
 }

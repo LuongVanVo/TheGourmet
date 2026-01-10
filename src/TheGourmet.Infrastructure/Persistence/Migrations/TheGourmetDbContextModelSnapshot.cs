@@ -395,11 +395,29 @@ namespace TheGourmet.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("PaymentExpiredAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PaymentTransactionsId")
                         .HasColumnType("text");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReceiverPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShippingAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("ShippingFee")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
