@@ -404,6 +404,9 @@ namespace TheGourmet.Infrastructure.Migrations
                     b.Property<string>("PaymentTransactionsId")
                         .HasColumnType("text");
 
+                    b.Property<string>("ReasonCancel")
+                        .HasColumnType("text");
+
                     b.Property<string>("ReceiverName")
                         .IsRequired()
                         .HasColumnType("text");

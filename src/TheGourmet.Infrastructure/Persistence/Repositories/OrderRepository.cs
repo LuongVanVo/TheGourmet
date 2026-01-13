@@ -25,4 +25,11 @@ public class OrderRepository : IOrderRepository
             .OrderByDescending(o => o.CreatedDate)
             .ToListAsync();
     }
+    
+    public async Task<Order?> GetByIdWithItemsAsync(Guid orderId)
+    {
+        return await _dbContext.Orders
+            .Include(o => o.OrderItems)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+    }
 }
