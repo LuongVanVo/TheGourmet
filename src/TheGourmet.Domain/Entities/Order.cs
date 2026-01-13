@@ -29,6 +29,7 @@ public class Order
     public string ReceiverPhone { get; set; } = string.Empty;
     public string ShippingAddress { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public string? ReasonCancel { get; set; } // Reason for cancellation, if any
     
     // Code transaction from payment gateway (VNPay, MoMo, etc)
     public string? PaymentTransactionsId { get; set; }

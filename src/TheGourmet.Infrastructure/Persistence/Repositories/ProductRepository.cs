@@ -115,4 +115,12 @@ public class ProductRepository(TheGourmetDbContext dbContext) : IProductReposito
 
         return rowsAffected > 0;
     }
+
+    public async Task IncreaseStockAtomicAsync(Guid productId, int quantity)
+    {
+        await dbContext.Database.ExecuteSqlInterpolatedAsync($@"
+        UPDATE ""Products"" 
+        SET ""StockQuantity"" = ""StockQuantity"" + {quantity}
+        WHERE ""Id"" = {productId}");
+    }
 }

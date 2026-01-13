@@ -50,6 +50,11 @@ namespace TheGourmet.Api.Middlewares
                     logger.LogWarning("Not found: {Message}", notFoundException.Message);
                     response = new { message = notFoundException.Message, errors = new Dictionary<string, string[]>() };
                     break;
+                case ForbiddenException forbiddenException:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    logger.LogWarning("Forbidden: {Message}", forbiddenException.Message);
+                    response = new { message = forbiddenException.Message, errors = new Dictionary<string, string[]>() };
+                    break;
 
                 default:
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

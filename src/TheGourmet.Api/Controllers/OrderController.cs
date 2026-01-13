@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TheGourmet.Api.Helper;
+using TheGourmet.Application.Features.Orders.Commands.CancelOrder;
 using TheGourmet.Application.Features.Orders.Commands.CreateOrder;
 using TheGourmet.Application.Features.Orders.Queries.GetOrdersByUserId;
 
@@ -34,6 +35,16 @@ public class OrderController : ControllerBase
             UserId = User.GetCurrentUserId()
         };
         var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+    
+    // Cancel order 
+    [HttpPatch("cancel/{orderId}")]
+    public async Task<IActionResult> CancelOrder([FromBody] CancelOrderCommand command, [FromRoute]Guid orderId)
+    {
+        command.UserId = User.GetCurrentUserId();
+        command.OrderId = orderId;
+        var result = await _mediator.Send(command);
         return Ok(result);
     }
 }

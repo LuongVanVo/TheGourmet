@@ -24,4 +24,5 @@ public interface IProductRepository
     
     // Transaction order
     Task<bool> DecreaseStockAtomicAsync(Guid productId, int quantity);
+    Task IncreaseStockAtomicAsync(Guid productId, int quantity);
 }
