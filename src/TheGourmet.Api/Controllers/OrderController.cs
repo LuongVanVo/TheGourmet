@@ -5,6 +5,7 @@ using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Orders.Commands.CancelOrder;
 using TheGourmet.Application.Features.Orders.Commands.CreateOrder;
 using TheGourmet.Application.Features.Orders.Queries.GetOrdersByUserId;
+using TheGourmet.Domain.Enums;
 
 namespace TheGourmet.Api.Controllers;
 
@@ -28,11 +29,12 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("user")]
-    public async Task<IActionResult> GetOrdersByUserId()
+    public async Task<IActionResult> GetOrdersByUserId([FromQuery] OrderStatus? status)
     {
         var query = new GetOrdersByUserIdQuery
         {
-            UserId = User.GetCurrentUserId()
+            UserId = User.GetCurrentUserId(),
+            Status = status
         };
         var result = await _mediator.Send(query);
         return Ok(result);

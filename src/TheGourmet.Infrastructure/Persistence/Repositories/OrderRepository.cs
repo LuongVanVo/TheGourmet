@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheGourmet.Application.Interfaces.Repositories;
 using TheGourmet.Domain.Entities;
+using TheGourmet.Domain.Enums;
 
 namespace TheGourmet.Infrastructure.Persistence.Repositories;
 
@@ -17,11 +18,18 @@ public class OrderRepository : IOrderRepository
         await _dbContext.Orders.AddAsync(order);
     }
 
-    public async Task<IEnumerable<Order>> GetOrdersByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<Order>> GetOrdersByUserIdAsync(Guid userId, OrderStatus? status)
     {
-        return await _dbContext.Orders
+        var query = _dbContext.Orders
             .Include(o => o.OrderItems)
-            .Where(o => o.UserId == userId)
+            .Where(o => o.UserId == userId);
+
+        if (status.HasValue)
+        {
+            query = query.Where(o => o.Status == status.Value);
+        }
+
+        return await query
             .OrderByDescending(o => o.CreatedDate)
             .ToListAsync();
     }

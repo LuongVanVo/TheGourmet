@@ -31,4 +31,7 @@ public interface IUserRepository
 
     // Get user profile by id
     Task<ApplicationUser?> GetUserProfileByIdAsync(string userId);
+    
+    // get email by user id
+    Task<string?> GetEmailByUserIdAsync(Guid userId);
 }

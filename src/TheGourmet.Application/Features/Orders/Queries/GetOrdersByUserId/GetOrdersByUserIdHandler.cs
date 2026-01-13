@@ -17,7 +17,7 @@ public class GetOrdersByUserIdHandler : IRequestHandler<GetOrdersByUserIdQuery, 
 
     public async Task<List<OrderDto>> Handle(GetOrdersByUserIdQuery request, CancellationToken cancellationToken)
     {
-        var orders = await _unitOfWork.Orders.GetOrdersByUserIdAsync(request.UserId);
+        var orders = await _unitOfWork.Orders.GetOrdersByUserIdAsync(request.UserId, request.Status);
         return _mapper.Map<List<OrderDto>>(orders);
     }
 }
