@@ -80,4 +80,11 @@ public class UserRepository : IUserRepository
     {
         return await _userManager.FindByIdAsync(userId);
     }
+    
+    // get email by user id
+    public async Task<string?> GetEmailByUserIdAsync(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        return user?.Email;
+    }
 }
