@@ -12,4 +12,5 @@ public class CreateOrderCommand : IRequest<OrderResponse>
     public string ShippingAddress { get; set; } = string.Empty;
     public string? Note { get; set; }
     public List<CreateOrderItemDto> OrderItems { get; set; } = new List<CreateOrderItemDto>();
+    public string? VoucherCode { get; set; }
 }

@@ -5,6 +5,7 @@ using TheGourmet.Application.Common.Events;
 using TheGourmet.Application.Common.ExternalServices;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Features.Orders.Results;
+using TheGourmet.Application.Interfaces;
 using TheGourmet.Application.Interfaces.Repositories;
 using TheGourmet.Domain.Entities;
 using TheGourmet.Domain.Enums;
@@ -16,11 +17,13 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
     private readonly IPublishEndpoint _publishEndpoint;
-    public CreateOrderHandler(IUnitOfWork unitOfWork, IUserRepository userRepository, IPublishEndpoint publishEndpoint)
+    private readonly IOrderCalculationService _orderCalculationService;
+    public CreateOrderHandler(IUnitOfWork unitOfWork, IUserRepository userRepository, IPublishEndpoint publishEndpoint, IOrderCalculationService orderCalculationService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
         _publishEndpoint = publishEndpoint;
+        _orderCalculationService = orderCalculationService;
     }
 
     public async Task<OrderResponse> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -29,6 +32,9 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
 
         try
         {
+            var calculationResult =
+                await _orderCalculationService.CalculateOrderAsync(request.OrderItems, request.VoucherCode);
+            
             var order = new Order
             {
                 Id = Guid.NewGuid(),
@@ -37,13 +43,15 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
                 Status = OrderStatus.Pending,
                 PaymentExpiredAt = DateTime.UtcNow.AddDays(1),
                 OrderItems = new List<OrderItem>(),
-                TotalAmount = 0,
+                TotalAmount = calculationResult.TotalAmount,
+                ShippingFee = calculationResult.ShippingFee,
+                DiscountAmount = calculationResult.DiscountAmount,
+                VoucherId = calculationResult.VoucherId,
                 ReceiverName = request.ReceiverName,
                 ReceiverPhone = request.ReceiverPhone,
                 ShippingAddress = request.ShippingAddress,
                 Note = request.Note,
             };
-            decimal subTotal = 0;
 
             foreach (var itemInput in request.OrderItems)
             {
@@ -52,7 +60,6 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
                     throw new BadRequestException($"Product with ID {itemInput.ProductId} does not have enough stock.");
 
                 var product = await _unitOfWork.Products.GetProductByIdAsync(itemInput.ProductId);
-                
                 if (product == null) throw new BadRequestException("Product not exist.");
 
                 var orderItem = new OrderItem
@@ -64,25 +71,15 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
                     UnitPrice = product.Price,
                     Quantity = itemInput.Quantity,
                 };
-                subTotal += orderItem.UnitPrice * orderItem.Quantity;
                 order.OrderItems.Add(orderItem);
             }
-
-            decimal shippingFee = 0;
-
-            if (subTotal > 500000)
-            {
-                shippingFee = subTotal * 0.02m;
-            }
-            else
-            {
-                shippingFee = subTotal * 0.05m;
-            }
-            
-            order.ShippingFee = shippingFee;
-            order.TotalAmount = subTotal + shippingFee;
             
             await _unitOfWork.Orders.AddOrderAsync(order);
+
+            if (calculationResult.VoucherId.HasValue)
+            {
+                await _unitOfWork.Vouchers.DecreaseQuantityAsync(calculationResult.VoucherId.Value);
+            }
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync();
             
@@ -128,17 +125,35 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
     private string GenerateOrderEmailBody(Order order, string customerName)
     {
         var itemsHtml = "";
+        decimal subTotal = 0;
+
+        // Calculate subtotal and generate items rows
         foreach (var item in order.OrderItems)
         {
+            var itemTotal = item.UnitPrice * item.Quantity;
+            subTotal += itemTotal;
+
             itemsHtml += $@"
                 <tr>
                     <td style='padding: 8px; border-bottom: 1px solid #ddd;'>{item.ProductName}</td>
                     <td style='padding: 8px; border-bottom: 1px solid #ddd; text-align: center;'>{item.Quantity}</td>
                     <td style='padding: 8px; border-bottom: 1px solid #ddd; text-align: right;'>{item.UnitPrice:N0} đ</td>
-                    <td style='padding: 8px; border-bottom: 1px solid #ddd; text-align: right;'>{(item.UnitPrice * item.Quantity):N0} đ</td>
+                    <td style='padding: 8px; border-bottom: 1px solid #ddd; text-align: right;'>{itemTotal:N0} đ</td>
                 </tr>";
         }
 
+        // Add discount row if applicable
+        var discountRowHtml = "";
+        if (order.DiscountAmount > 0)
+        {
+            discountRowHtml = $@"
+                <tr>
+                    <td colspan='3' style='text-align: right; padding: 8px; font-weight: bold; color: #28a745;'>Giảm giá (Voucher):</td>
+                    <td style='text-align: right; padding: 8px; color: #28a745;'>-{order.DiscountAmount:N0} đ</td>
+                </tr>";
+        }
+
+        // HTML Email Body
         return $@"
             <html>
                 <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
@@ -161,23 +176,33 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
                             </tbody>
                             <tfoot>
                                 <tr>
+                                    <td colspan='3' style='text-align: right; padding: 8px; font-weight: bold;'>Tạm tính:</td>
+                                    <td style='text-align: right; padding: 8px;'>{subTotal:N0} đ</td>
+                                </tr>
+                                
+                                <tr>
                                     <td colspan='3' style='text-align: right; padding: 8px; font-weight: bold;'>Phí vận chuyển:</td>
                                     <td style='text-align: right; padding: 8px;'>{order.ShippingFee:N0} đ</td>
                                 </tr>
-                                <tr>
-                                    <td colspan='3' style='text-align: right; padding: 8px; font-weight: bold; color: #d9534f; font-size: 1.1em;'>Tổng cộng:</td>
-                                    <td style='text-align: right; padding: 8px; font-weight: bold; color: #d9534f; font-size: 1.1em;'>{order.TotalAmount:N0} đ</td>
+
+                                {discountRowHtml}
+
+                                <tr style='border-top: 2px solid #eee;'>
+                                    <td colspan='3' style='text-align: right; padding: 8px; font-weight: bold; color: #d9534f; font-size: 1.2em;'>Tổng thanh toán:</td>
+                                    <td style='text-align: right; padding: 8px; font-weight: bold; color: #d9534f; font-size: 1.2em;'>{order.TotalAmount:N0} đ</td>
                                 </tr>
                             </tfoot>
                         </table>
 
-                        <div style='margin-top: 20px; background-color: #f9f9f9; padding: 10px;'>
-                            <p><strong>Người nhận:</strong> {order.ReceiverName} ({order.ReceiverPhone})</p>
-                            <p><strong>Địa chỉ giao:</strong> {order.ShippingAddress}</p>
+                        <div style='margin-top: 20px; background-color: #f9f9f9; padding: 15px; border-radius: 5px;'>
+                            <h4 style='margin-top: 0;'>Thông tin giao hàng</h4>
+                            <p style='margin: 5px 0;'><strong>Người nhận:</strong> {order.ReceiverName} ({order.ReceiverPhone})</p>
+                            <p style='margin: 5px 0;'><strong>Địa chỉ:</strong> {order.ShippingAddress}</p>
+                            <p style='margin: 5px 0;'><strong>Ghi chú:</strong> {order.Note ?? "Không có"}</p>
                         </div>
 
-                        <p style='margin-top: 20px; font-size: 0.9em; color: #777;'>
-                            Nếu bạn cần hỗ trợ, vui lòng liên hệ hotline hoặc trả lời email này.<br>
+                        <p style='margin-top: 20px; font-size: 0.9em; color: #777; text-align: center;'>
+                            Nếu bạn cần hỗ trợ, vui lòng trả lời email này.<br>
                             Trân trọng,<br>
                             <strong>The Gourmet Team</strong>
                         </p>
