@@ -1,6 +1,8 @@
-﻿using MassTransit;
+﻿using Hangfire;
+using MassTransit;
 using MediatR;
 using TheGourmet.Application.Common.Events;
+using TheGourmet.Application.Common.ExternalServices;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Features.Orders.Results;
 using TheGourmet.Application.Interfaces.Repositories;
@@ -83,7 +85,12 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
             await _unitOfWork.Orders.AddOrderAsync(order);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync();
-
+            
+            // Hangfire 
+            var jobId = BackgroundJob.Schedule<OrderTimeoutJob>(
+                job => job.CheckAndCancelOrderAsync(order.Id),
+                TimeSpan.FromDays(1));
+            
             try
             {
                 // send email notification 
@@ -108,7 +115,7 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
             {
                 Id = order.Id,
                 Success = true,
-                Message = "Order created successfully",
+                Message = "Order created successfully. Please complete the payment within 24 hours.",
             };
         }
         catch

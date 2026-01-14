@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using TheGourmet.Api.Middlewares;
@@ -19,6 +21,15 @@ builder.Services.AddApplicationServices();
 // Connect Layer Infrastructure
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Hangfire setup
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHangfireServer();
+
 var app = builder.Build();
 
 // Add Exception Handling Middleware
@@ -34,6 +45,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire"); // access via http://localhost:xxxx/hangfire
 app.MapControllers();
 
 app.Run();
