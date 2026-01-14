@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Orders.Commands.CancelOrder;
 using TheGourmet.Application.Features.Orders.Commands.CreateOrder;
+using TheGourmet.Application.Features.Orders.Queries.GetOrderPreview;
 using TheGourmet.Application.Features.Orders.Queries.GetOrdersByUserId;
 using TheGourmet.Domain.Enums;
 
@@ -50,6 +51,14 @@ public class OrderController : ControllerBase
     {
         command.UserId = User.GetCurrentUserId();
         command.OrderId = orderId;
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+    
+    // Preview order before create order
+    [HttpPost("preview")]
+    public async Task<IActionResult> PreviewOrder([FromBody] GetOrderPreviewQuery command)
+    {
         var result = await _mediator.Send(command);
         return Ok(result);
     }

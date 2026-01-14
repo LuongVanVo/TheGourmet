@@ -24,6 +24,8 @@ public class Order
     public decimal TotalAmount { get; set; }
     [Column(TypeName = "decimal(18,2)")]
     public decimal ShippingFee { get; set; }
+    public decimal? DiscountAmount { get; set; } = 0;
+    public Guid? VoucherId { get; set; }
     public OrderStatus Status { get; set; }
     public string ReceiverName { get; set; } = string.Empty;
     public string ReceiverPhone { get; set; } = string.Empty;
@@ -36,4 +38,6 @@ public class Order
     
     // Relationships
     public virtual ICollection<OrderItem> OrderItems { get; set; }
+    [ForeignKey("VoucherId")]
+    public virtual Voucher? Voucher { get; set; }
 }

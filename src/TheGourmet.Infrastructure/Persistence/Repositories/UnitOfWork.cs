@@ -10,7 +10,7 @@ public class UnitOfWork : IUnitOfWork
     
     private IProductRepository? _productRepository;
     private IOrderRepository? _orderRepository;
-    
+    private IVoucherRepository? _voucherRepository;
     public UnitOfWork(TheGourmetDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -28,6 +28,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _orderRepository ??= new OrderRepository(_dbContext);
+        }
+    }
+
+    public IVoucherRepository Vouchers
+    {
+        get
+        {
+            return _voucherRepository ??= new VoucherRepository(_dbContext);
         }
     }
 

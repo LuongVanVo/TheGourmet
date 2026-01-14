@@ -194,6 +194,11 @@ public static class DependencyInjection
         // Register UnitOfWork
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+        
+        // Register Voucher Repository
+        services.AddScoped<IVoucherRepository, VoucherRepository>();
+        // Register Calculation Order Service
+        services.AddScoped<IOrderCalculationService, OrderCalculationService>();
         return services;
     }
 }
