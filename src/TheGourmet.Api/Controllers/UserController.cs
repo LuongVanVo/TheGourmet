@@ -3,6 +3,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Application.Features.Auth.Queries.GetUserProfile;
 using TheGourmet.Application.Interfaces;
 
@@ -22,6 +23,7 @@ namespace TheGourmet.Api.Controllers
 
         [Authorize]
         [HttpGet("profile")]
+        [SwaggerOperation(Summary = "Get the profile of the currently authenticated user.")]
         public async Task<IActionResult> GetUserProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub); 

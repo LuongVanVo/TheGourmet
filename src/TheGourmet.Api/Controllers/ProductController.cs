@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Application.Common.Models;
 using TheGourmet.Application.Features.Products.Commands.CreateProduct;
 using TheGourmet.Application.Features.Products.Commands.ToggleActiveProduct;
@@ -18,6 +19,7 @@ public class ProductController(IMediator mediator) : ControllerBase
 {
     [Authorize(Roles = "Admin")]
     [HttpPost]
+    [SwaggerOperation(Summary = "Add a new product to the catalog.")]
     public async Task<IActionResult> AddProduct([FromForm] CreateProductCommand command)
     {
         var result = await mediator.Send(command);
@@ -26,6 +28,7 @@ public class ProductController(IMediator mediator) : ControllerBase
     
     // Get products with pagination
     [HttpGet]
+    [SwaggerOperation(Summary = "Get a paginated list of products.")]
     public async Task<ActionResult<PaginatedList<GetProductsWithPaginationResponse>>> GetProducts(
         [FromQuery] GetProductsWithPaginationQuery query)
     {
@@ -34,6 +37,7 @@ public class ProductController(IMediator mediator) : ControllerBase
     
     // Get product by id
     [HttpGet("{id}")]
+    [SwaggerOperation(Summary = "Get product details by ID.")]
     public async Task<ActionResult<GetProductByIdResponse>> GetProductById([FromRoute] GetProductByIdQuery query)
     {
         var result = await mediator.Send(query);
@@ -43,6 +47,7 @@ public class ProductController(IMediator mediator) : ControllerBase
     // update info product 
     [Authorize(Roles = "Admin")]
     [HttpPatch("{id}")]
+    [SwaggerOperation(Summary = "Update product information by ID.")]
     public async Task<ActionResult> UpdateProduct([FromBody] UpdateProductCommand command, [FromRoute] Guid id)
     {
         command.Id = id;
@@ -53,6 +58,7 @@ public class ProductController(IMediator mediator) : ControllerBase
     // Toggler product status (active/inactive)
     [Authorize(Roles = "Admin")]
     [HttpPatch("{id}/active")]
+    [SwaggerOperation(Summary = "Toggle product active status by ID.")]
     public async Task<ActionResult> ToggleProductStatus([FromRoute] ToggleActiveProductCommand command)
     {
         var result = await mediator.Send(command);

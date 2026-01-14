@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Application.Features.Auth.Commands.ConfirmEmail;
 using TheGourmet.Application.Features.Auth.Commands.ForgotPassword;
 using TheGourmet.Application.Features.Auth.Commands.Login;
@@ -26,6 +27,7 @@ public class AuthController : ControllerBase
 
     // register endpoint
     [HttpPost("register")]
+    [SwaggerOperation(Summary = "Register a new user")]
     public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
         var response = await _mediator.Send(command);
@@ -34,6 +36,7 @@ public class AuthController : ControllerBase
 
     // active account endpoint
     [HttpGet("confirm-email")]
+    [SwaggerOperation(Summary = "Confirm email to activate account")]
     public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailCommand command)
     {
         var response = await _mediator.Send(command);
@@ -42,6 +45,7 @@ public class AuthController : ControllerBase
 
     // login endpoint
     [HttpPost("login")]
+    [SwaggerOperation(Summary = "User login and set auth cookies")]
     public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
         var loginResult = await _mediator.Send(command);
@@ -55,6 +59,7 @@ public class AuthController : ControllerBase
     // logout endpoint
     [Authorize] 
     [HttpPost("logout")]
+    [SwaggerOperation(Summary = "User logout and remove auth cookies")]
     public async Task<IActionResult> Logout()
     {   
         var refreshToken = Request.Cookies["refresh_token"];
@@ -72,6 +77,7 @@ public class AuthController : ControllerBase
 
     // refresh token endpoint
     [HttpPost("refresh-token")]
+    [SwaggerOperation(Summary = "Refresh access token using refresh token")]
     public async Task<IActionResult> RefreshToken()
     {
         var refreshToken = Request.Cookies["refresh_token"];
@@ -87,6 +93,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("reset-password-page")]
+    [SwaggerOperation(Summary = "Get Reset Password HTML Page")]
     public IActionResult ResetPasswordPage([FromQuery] string email, [FromQuery] string token)
     {       
         var htmlContent = $@"
@@ -169,6 +176,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
+    [SwaggerOperation(Summary = "Initiate forgot password process")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
     {
         var response = await _mediator.Send(command);
@@ -181,6 +189,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("reset-password")]
+    [SwaggerOperation(Summary = "Reset user password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
     {
         var response = await _mediator.Send(command);
