@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Infrastructure.Persistence;
 
 namespace TheGourmet.Api.Controllers;
@@ -19,6 +20,7 @@ public class HealthController : ControllerBase
 
     [Authorize]
     [HttpGet]
+    [SwaggerOperation(Summary = "Check the health status of TheGourmet API")]
     public async Task<IActionResult> CheckHealth()
     {
         try

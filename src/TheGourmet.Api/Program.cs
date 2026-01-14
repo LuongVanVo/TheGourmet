@@ -28,6 +28,12 @@ builder.Services.AddHangfire(configuration => configuration
     .UseRecommendedSerializerSettings()
     .UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// add swagger details
+builder.Services.AddSwaggerGen(options =>
+{
+    options.EnableAnnotations();
+});
+
 builder.Services.AddHangfireServer();
 
 var app = builder.Build();

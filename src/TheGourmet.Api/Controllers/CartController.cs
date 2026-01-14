@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Carts.Commands.AddItemToCart;
 using TheGourmet.Application.Features.Carts.Commands.ClearItemToCart;
@@ -21,6 +22,7 @@ public class CartController : ControllerBase
     }
 
     [HttpGet]
+    [SwaggerOperation(Summary = "Get current user's cart")]
     public async Task<IActionResult> GetCart()
     {
         var userId = User.GetCurrentUserId();
@@ -30,6 +32,7 @@ public class CartController : ControllerBase
     }
 
     [HttpPost("items")]
+    [SwaggerOperation(Summary = "Add item to cart")]
     public async Task<IActionResult> AddItemToCart([FromBody] AddItemToCartCommand command)
     {
         command.UserId = User.GetCurrentUserId();
@@ -39,6 +42,7 @@ public class CartController : ControllerBase
     
     // update quantity product item in cart
     [HttpPatch("items/{productId}")]
+    [SwaggerOperation(Summary = "Update quantity product item in cart")]
     public async Task<IActionResult> UpdateItemProductQuantity([FromRoute] Guid productId, [FromBody] UpdateQuantityProductInCartCommand command)
     {
         command.ProductId = productId;
@@ -50,6 +54,7 @@ public class CartController : ControllerBase
     
     // remove product item from cart
     [HttpDelete("items/{productId}")]
+    [SwaggerOperation(Summary = "Remove product item from cart")]
     public async Task<IActionResult> RemoveItemFromCart([FromRoute] Guid productId)
     {
         var command = new UpdateQuantityProductInCartCommand
@@ -64,6 +69,7 @@ public class CartController : ControllerBase
     
     // clear cart 
     [HttpDelete]
+    [SwaggerOperation(Summary = "Clear cart")]
     public async Task<IActionResult> ClearCart()
     {
         var command = new ClearItemToCartCommand

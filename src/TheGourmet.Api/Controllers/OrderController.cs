@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Orders.Commands.CancelOrder;
 using TheGourmet.Application.Features.Orders.Commands.CreateOrder;
@@ -21,6 +22,7 @@ public class OrderController : ControllerBase
     }
     
     [HttpPost]
+    [SwaggerOperation(Summary = "Create a new order for the current user.")]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
     {
         command.UserId = User.GetCurrentUserId();
@@ -29,6 +31,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("user")]
+    [SwaggerOperation(Summary = "Get orders of the current user, optionally filtered by status.")]
     public async Task<IActionResult> GetOrdersByUserId([FromQuery] OrderStatus? status)
     {
         var query = new GetOrdersByUserIdQuery
@@ -42,6 +45,7 @@ public class OrderController : ControllerBase
     
     // Cancel order 
     [HttpPatch("cancel/{orderId}")]
+    [SwaggerOperation(Summary = "Cancel an order by ID for the current user.")]
     public async Task<IActionResult> CancelOrder([FromBody] CancelOrderCommand command, [FromRoute]Guid orderId)
     {
         command.UserId = User.GetCurrentUserId();

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Application.Interfaces;
 
 namespace TheGourmet.Api.Controllers;
@@ -12,6 +13,7 @@ public class FileController(ICloudinaryService cloudinaryService) : ControllerBa
     
     [Authorize]
     [HttpPost("avatar")]
+    [SwaggerOperation(Summary = "Upload user avatar image")]
     public async Task<IActionResult> UploadAvatar(IFormFile file)
     {
         var url = await _cloudinaryService.UploadImageAsync(file, "avatars");
@@ -20,6 +22,7 @@ public class FileController(ICloudinaryService cloudinaryService) : ControllerBa
     
     [Authorize(Roles = "Admin")]
     [HttpPost("product-image")]
+    [SwaggerOperation(Summary = "Upload product image (Admin only)")]
     public async Task<IActionResult> UploadProductImage(IFormFile file)
     {
         var url = await _cloudinaryService.UploadImageAsync(file, "products");
@@ -29,6 +32,7 @@ public class FileController(ICloudinaryService cloudinaryService) : ControllerBa
     // General file upload
     [Authorize]
     [HttpPost("upload/{type}")]
+    [SwaggerOperation(Summary = "General file upload. Type can be 'avatars', 'products', or 'others'")]
     public async Task<IActionResult> UploadGeneral(IFormFile file, string type)
     {
         var allowedTypes = new[] { "avatars", "products", "others" };
