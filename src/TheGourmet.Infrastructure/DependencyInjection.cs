@@ -199,6 +199,9 @@ public static class DependencyInjection
         services.AddScoped<IVoucherRepository, VoucherRepository>();
         // Register Calculation Order Service
         services.AddScoped<IOrderCalculationService, OrderCalculationService>();
+        
+        // Register Product Review Repository
+        services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
         return services;
     }
 }

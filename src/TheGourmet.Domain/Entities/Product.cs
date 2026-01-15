@@ -18,6 +18,8 @@ public class Product : BaseAuditableEntity
     public int StockQuantity { get; set; } // Số lượng tồn kho
     public string? ImageUrl { get; set; }
     public bool IsActive { get; set; } = true;
+    public double AverageRating { get; set; } = 0.0;
+    public int ReviewCount { get; set; } = 0;
     
     // Verion for concurrency control
     [Timestamp]
@@ -28,4 +30,5 @@ public class Product : BaseAuditableEntity
     
     // virtual for lazy loading
     public virtual Category Category { get; set; } = null!;
+    public virtual ICollection<ProductReview> Reviews { get; set; } = null!;
 }
