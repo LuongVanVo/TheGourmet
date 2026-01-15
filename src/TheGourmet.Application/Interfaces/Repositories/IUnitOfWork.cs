@@ -5,6 +5,7 @@ public interface IUnitOfWork : IDisposable
     IProductRepository Products { get; }
     IOrderRepository Orders { get; }
     IVoucherRepository Vouchers { get; }
+    IProductReviewRepository ProductReviews { get; }
     
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

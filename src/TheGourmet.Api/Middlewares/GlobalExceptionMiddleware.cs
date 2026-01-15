@@ -55,6 +55,11 @@ namespace TheGourmet.Api.Middlewares
                     logger.LogWarning("Forbidden: {Message}", forbiddenException.Message);
                     response = new { message = forbiddenException.Message, errors = new Dictionary<string, string[]>() };
                     break;
+                case UnauthorizedAccessException unauthorizedAccessException:
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    logger.LogWarning("Unauthorized access: {Message}", unauthorizedAccessException.Message);
+                    response = new { message = "Unauthorized access", errors = new Dictionary<string, string[]>() };
+                    break;
 
                 default:
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

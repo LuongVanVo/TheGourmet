@@ -40,4 +40,12 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.OrderItems)
             .FirstOrDefaultAsync(o => o.Id == orderId);
     }
+    
+    // Get order by id
+    public async Task<Order?> GetByIdAsync(Guid orderId)
+    {
+        return await _dbContext.Orders
+            .Include(o => o.OrderItems)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+    }
 }
