@@ -5,11 +5,11 @@ using TheGourmet.Application.Interfaces.Repositories;
 
 namespace TheGourmet.Application.Features.Orders.Queries.GetCancelReasons;
 
-public class GetCancelReasonsHandle : IRequestHandler<GetCancelReasonsQuery, List<OrderCancelReasonDto>>
+public class GetCancelReasonsHandler : IRequestHandler<GetCancelReasonsQuery, List<OrderCancelReasonDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    public GetCancelReasonsHandle(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetCancelReasonsHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;

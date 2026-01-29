@@ -31,10 +31,16 @@ public class CancelOrderHandler : IRequestHandler<CancelOrderCommand, OrderRespo
                 throw new BadRequestException("Order is already cancelled.");
             }
 
+            if (order.Status == OrderStatus.Shipping)
+            {
+                throw new BadRequestException("Order is already being shipped and cannot be cancelled.");
+            }
+            
             if (order.Status != OrderStatus.Pending)
             {
                 throw new BadRequestException("Not able to cancel this order at its current status.");
             }
+
             
             // Check permission
             if (order.UserId != request.UserId) 
@@ -64,6 +70,7 @@ public class CancelOrderHandler : IRequestHandler<CancelOrderCommand, OrderRespo
                 reason = request.OtherReason;
             }
             order.ReasonCancel = reason;
+            order.CanceledDate = DateTime.UtcNow;
             
             // restock products
             foreach (var item in order.OrderItems)

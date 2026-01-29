@@ -38,6 +38,10 @@ public class Order
     public string? PaymentTransactionsId { get; set; }
     // jobId hangfire
     public string? HangfireJobId { get; set; }
+    // Completed date
+    public DateTime? CompletedDate { get; set; }
+    // Canceled date
+    public DateTime? CanceledDate { get; set; }
     
     // Relationships
     public virtual ICollection<OrderItem> OrderItems { get; set; }

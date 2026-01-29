@@ -10,4 +10,6 @@ public interface IOrderRepository
     Task<IEnumerable<Order>> GetOrdersByUserIdAsync(Guid userId, OrderStatus? status);
     // Get order by id
     Task<Order?> GetByIdAsync(Guid orderId);
+    // Update order in DB
+    Task UpdateOrderAsync(Order order);
 }
