@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Orders.Commands.CancelOrder;
+using TheGourmet.Application.Features.Orders.Commands.ConfirmReceipt;
 using TheGourmet.Application.Features.Orders.Commands.CreateOrder;
 using TheGourmet.Application.Features.Orders.Queries.GetCancelReasons;
 using TheGourmet.Application.Features.Orders.Queries.GetOrderPreview;
@@ -71,4 +72,16 @@ public class OrderController : ControllerBase
         var result = await _mediator.Send(new GetCancelReasonsQuery());
         return Ok(result);
     } 
+    
+    // Confirm receipt of order
+    [HttpPatch("confirm-receipt/{orderId}")]
+    [SwaggerOperation(Summary = "Confirm receipt of an order by ID for the current user.")]
+    public async Task<IActionResult> ConfirmReceipt([FromRoute]Guid orderId)
+    {
+        var command = new ConfirmReceiptCommand();
+        command.UserId = User.GetCurrentUserId();
+        command.Id = orderId;
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
 }
