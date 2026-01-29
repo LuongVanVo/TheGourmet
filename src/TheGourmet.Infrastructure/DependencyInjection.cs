@@ -202,6 +202,9 @@ public static class DependencyInjection
         
         // Register Product Review Repository
         services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
+        
+        // Register Cancel Reason Repository
+        services.AddScoped<IOrderCancelReasonRepository, OrderCancelReasonRepository>();
         return services;
     }
 }

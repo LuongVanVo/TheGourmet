@@ -32,12 +32,16 @@ public class Order
     public string ShippingAddress { get; set; } = string.Empty;
     public string? Note { get; set; }
     public string? ReasonCancel { get; set; } // Reason for cancellation, if any
+    public Guid? ReasonCancelId { get; set; }
     
     // Code transaction from payment gateway (VNPay, MoMo, etc)
     public string? PaymentTransactionsId { get; set; }
+    // jobId hangfire
+    public string? HangfireJobId { get; set; }
     
     // Relationships
     public virtual ICollection<OrderItem> OrderItems { get; set; }
     [ForeignKey("VoucherId")]
     public virtual Voucher? Voucher { get; set; }
+    public virtual OrderCancelReason? OrderCancelReason { get; set; }
 }

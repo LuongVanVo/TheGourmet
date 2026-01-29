@@ -80,13 +80,16 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderRespo
             {
                 await _unitOfWork.Vouchers.DecreaseQuantityAsync(calculationResult.VoucherId.Value);
             }
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync();
             
             // Hangfire 
             var jobId = BackgroundJob.Schedule<OrderTimeoutJob>(
                 job => job.CheckAndCancelOrderAsync(order.Id),
                 TimeSpan.FromDays(1));
+
+            order.HangfireJobId = jobId;
+            
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync();
             
             try
             {
