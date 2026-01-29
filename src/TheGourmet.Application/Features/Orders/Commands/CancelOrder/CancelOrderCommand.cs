@@ -7,5 +7,6 @@ public class CancelOrderCommand : IRequest<OrderResponse>
 {
     public Guid OrderId { get; set; }
     public Guid UserId { get; set; }
-    public string? Reason { get; set; }
+    public Guid? ReasonId { get; set; }
+    public string? OtherReason { get; set; }
 }

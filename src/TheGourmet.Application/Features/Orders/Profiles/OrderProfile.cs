@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using TheGourmet.Application.DTOs.Order;
+using TheGourmet.Application.DTOs.OrderCancelReason;
 using TheGourmet.Domain.Entities;
 
 namespace TheGourmet.Application.Features.Orders.Profiles;
@@ -19,5 +20,6 @@ public class OrderProfile : Profile
                 opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.OrderItems,
                 opt => opt.MapFrom(src => src.OrderItems));
+        CreateMap<OrderCancelReason, OrderCancelReasonDto>();
     }
 }

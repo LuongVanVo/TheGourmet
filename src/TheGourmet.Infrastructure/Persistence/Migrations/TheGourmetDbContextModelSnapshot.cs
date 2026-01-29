@@ -398,6 +398,9 @@ namespace TheGourmet.Infrastructure.Migrations
                     b.Property<decimal?>("DiscountAmount")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("HangfireJobId")
+                        .HasColumnType("text");
+
                     b.Property<string>("Note")
                         .HasColumnType("text");
 
@@ -409,6 +412,9 @@ namespace TheGourmet.Infrastructure.Migrations
 
                     b.Property<string>("ReasonCancel")
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("ReasonCancelId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ReceiverName")
                         .IsRequired()
@@ -439,11 +445,44 @@ namespace TheGourmet.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ReasonCancelId");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("VoucherId");
 
                     b.ToTable("Orders", (string)null);
+                });
+
+            modelBuilder.Entity("TheGourmet.Domain.Entities.OrderCancelReason", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OrderCancelReasons");
                 });
 
             modelBuilder.Entity("TheGourmet.Domain.Entities.OrderItem", b =>
@@ -726,10 +765,17 @@ namespace TheGourmet.Infrastructure.Migrations
 
             modelBuilder.Entity("TheGourmet.Domain.Entities.Order", b =>
                 {
+                    b.HasOne("TheGourmet.Domain.Entities.OrderCancelReason", "OrderCancelReason")
+                        .WithMany("Orders")
+                        .HasForeignKey("ReasonCancelId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("TheGourmet.Domain.Entities.Voucher", "Voucher")
                         .WithMany("Orders")
                         .HasForeignKey("VoucherId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("OrderCancelReason");
 
                     b.Navigation("Voucher");
                 });
@@ -804,6 +850,11 @@ namespace TheGourmet.Infrastructure.Migrations
             modelBuilder.Entity("TheGourmet.Domain.Entities.Order", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("TheGourmet.Domain.Entities.OrderCancelReason", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("TheGourmet.Domain.Entities.Product", b =>

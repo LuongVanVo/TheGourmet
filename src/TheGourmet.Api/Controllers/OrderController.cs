@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Orders.Commands.CancelOrder;
 using TheGourmet.Application.Features.Orders.Commands.CreateOrder;
+using TheGourmet.Application.Features.Orders.Queries.GetCancelReasons;
 using TheGourmet.Application.Features.Orders.Queries.GetOrderPreview;
 using TheGourmet.Application.Features.Orders.Queries.GetOrdersByUserId;
 using TheGourmet.Domain.Enums;
@@ -62,4 +63,12 @@ public class OrderController : ControllerBase
         var result = await _mediator.Send(command);
         return Ok(result);
     }
+    
+    // Get all Cancel Order reason
+    [HttpGet("cancel-reasons")]
+    public async Task<IActionResult> GetAllOrderReason()
+    {
+        var result = await _mediator.Send(new GetCancelReasonsQuery());
+        return Ok(result);
+    } 
 }

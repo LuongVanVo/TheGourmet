@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     private IOrderRepository? _orderRepository;
     private IVoucherRepository? _voucherRepository;
     private IProductReviewRepository? _productReviewRepository;
+    private IOrderCancelReasonRepository? _orderCancelReasonRepository;
     public UnitOfWork(TheGourmetDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -45,6 +46,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _productReviewRepository ??= new ProductReviewRepository(_dbContext);
+        }
+    }
+
+    public IOrderCancelReasonRepository OrderCancelReasons
+    {
+        get
+        {
+            return _orderCancelReasonRepository ??= new OrderCancelReasonRepository(_dbContext);
         }
     }
 

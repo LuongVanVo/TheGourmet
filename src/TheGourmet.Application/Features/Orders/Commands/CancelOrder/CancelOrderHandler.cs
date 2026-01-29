@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Hangfire;
+using MediatR;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Features.Orders.Results;
 using TheGourmet.Application.Interfaces.Repositories;
@@ -39,9 +40,30 @@ public class CancelOrderHandler : IRequestHandler<CancelOrderCommand, OrderRespo
             if (order.UserId != request.UserId) 
                 throw new ForbiddenException("You do not have permission to cancel this order.");
             
+            // Remove job check paid of Hangfire
+            if (!string.IsNullOrEmpty(order.HangfireJobId))
+            {
+                BackgroundJob.Delete(order.HangfireJobId);
+                order.HangfireJobId = null;
+            }
+            
             // update order status
             order.Status = OrderStatus.Cancelled;
-            order.ReasonCancel = request.Reason;
+            string reason = "Không có lý do cụ thể";
+
+            if (request.ReasonId.HasValue)
+            {
+                var reasonTemplate = await _unitOfWork.OrderCancelReasons.GetByIdAsync(request.ReasonId.Value);
+                if (reasonTemplate != null)
+                {
+                    reason = reasonTemplate.Description;
+                }
+            } 
+            else if (!string.IsNullOrWhiteSpace(request.OtherReason))
+            {
+                reason = request.OtherReason;
+            }
+            order.ReasonCancel = reason;
             
             // restock products
             foreach (var item in order.OrderItems)

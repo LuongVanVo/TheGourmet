@@ -28,6 +28,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .WithMany(v => v.Orders)
             .HasForeignKey(o => o.VoucherId)
             .OnDelete(DeleteBehavior.SetNull); // If voucher is deleted, keep the order but set VoucherId to null
+        builder.HasOne(o => o.OrderCancelReason)
+            .WithMany(r => r.Orders)
+            .HasForeignKey(o => o.ReasonCancelId)
+            .OnDelete(DeleteBehavior.SetNull);
         
         // Index userId to load orders by user quickly
         builder.HasIndex(o => o.UserId);
