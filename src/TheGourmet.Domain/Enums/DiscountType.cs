@@ -3,5 +3,6 @@
 public enum DiscountType
 {
     FixedAmount = 1,
-    Percentage = 2
+    Percentage = 2,
+    FreeShipping = 3,
 }

@@ -1,4 +1,5 @@
-﻿using TheGourmet.Application.DTOs.Order;
+﻿using Org.BouncyCastle.Asn1.IsisMtt.X509;
+using TheGourmet.Application.DTOs.Order;
 using TheGourmet.Application.Exceptions;
 using TheGourmet.Application.Interfaces;
 using TheGourmet.Application.Interfaces.Repositories;
@@ -26,10 +27,14 @@ public class OrderCalculationService : IOrderCalculationService
             subTotal += product.Price * item.Quantity;
         }
         
+        decimal originalShippingFee = (subTotal > 500000) ? subTotal * 0.02m : subTotal * 0.05m;
+        
         // Calculate discount if voucher code is provided
         decimal discountAmount = 0;
+        decimal shippingDiscount = 0;
         Guid? voucherId = null;
         string message = "Không áp dụng mã giảm giá";
+        decimal finalShippingFee = originalShippingFee;
 
         if (!string.IsNullOrEmpty(voucherCode))
         {
@@ -48,34 +53,50 @@ public class OrderCalculationService : IOrderCalculationService
                 throw new BadRequestException("Order amount does not meet the minimum requirement for this voucher.");
             
             // calculate
-            if (voucher.DiscountType == DiscountType.FixedAmount)
+            switch (voucher.DiscountType)
             {
-                discountAmount = voucher.DiscountValue;
+                case DiscountType.FixedAmount:
+                    discountAmount = voucher.DiscountValue;
+                    break;
+                
+                case DiscountType.Percentage:
+                    discountAmount = subTotal * (voucher.DiscountValue / 100);
+                    if (voucher.MaxDiscountAmount.HasValue && discountAmount > voucher.MaxDiscountAmount.Value)
+                    {
+                        discountAmount = voucher.MaxDiscountAmount.Value;
+                    }
+                    break;
+                
+                case DiscountType.FreeShipping:
+                    shippingDiscount = originalShippingFee;
+                    
+                    // if voucher has MaxDiscountAmount (e.g: Only free ship maximum 30k)
+                    if (voucher.MaxDiscountAmount.HasValue && shippingDiscount > voucher.MaxDiscountAmount.Value)
+                    {
+                        shippingDiscount = voucher.MaxDiscountAmount.Value;
+                    }
+                    
+                    // calculate shipping fee after decrease
+                    finalShippingFee = originalShippingFee - shippingDiscount;
+                    if (finalShippingFee < 0) finalShippingFee = 0;
+                    break;
             }
-            else
-            {
-                discountAmount = subTotal * (voucher.DiscountValue / 100);
-                if (voucher.MaxDiscountAmount.HasValue && discountAmount > voucher.MaxDiscountAmount.Value)
-                {
-                    discountAmount = voucher.MaxDiscountAmount.Value;
-                }
-            }
+            
             // discount không được vượt quá tổng tiền
             if (discountAmount > subTotal) discountAmount = subTotal;
 
             voucherId = voucher.Id;
             message = "Áp dụng mã giảm giá thành công!";
         }
-        
-        // Calculate shipping fee
-        decimal shippingFee = (subTotal > 500000) ? subTotal * 0.02m : subTotal * 0.05m;
+
+        decimal totalAmount = subTotal - discountAmount + finalShippingFee;
 
         return new OrderPreviewDto
         {
             SubTotal = subTotal,
-            ShippingFee = shippingFee,
+            ShippingFee = finalShippingFee,
             DiscountAmount = discountAmount,
-            TotalAmount = subTotal + shippingFee - discountAmount,
+            TotalAmount = totalAmount,
             ApplidVoucherCode = voucherCode,
             VoucherId = voucherId,
             Message = message
