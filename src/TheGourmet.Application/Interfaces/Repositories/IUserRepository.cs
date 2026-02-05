@@ -11,6 +11,7 @@ public interface IUserRepository
     Task<ApplicationUser?> GetUserByUserId(string userId);
     // create new user
     Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password);
+    Task<IdentityResult> CreateUserAsync(ApplicationUser user);
     // Check password
     Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Application.Features.Auth.Commands.ConfirmEmail;
 using TheGourmet.Application.Features.Auth.Commands.ForgotPassword;
+using TheGourmet.Application.Features.Auth.Commands.GoogleLogin;
 using TheGourmet.Application.Features.Auth.Commands.Login;
 using TheGourmet.Application.Features.Auth.Commands.Logout;
 using TheGourmet.Application.Features.Auth.Commands.RefreshToken;
@@ -19,10 +20,12 @@ public class AuthController : ControllerBase
 {
     private readonly ICookieService _cookieService;
     private readonly IMediator _mediator;
-    public AuthController(ICookieService cookieService, IMediator mediator)
+    private readonly IConfiguration _configuration;
+    public AuthController(ICookieService cookieService, IMediator mediator, IConfiguration configuration)
     {
         _cookieService = cookieService;
         _mediator = mediator;
+        _configuration = configuration;
     }
 
     // register endpoint
@@ -54,6 +57,34 @@ public class AuthController : ControllerBase
         _cookieService.SetAuthCookies(loginResult.AccessToken ?? string.Empty, loginResult.RefreshToken ?? string.Empty);
 
         return Ok(loginResult);
+    }
+    
+    // login with google oauth2
+    [HttpGet("google-login")]
+    public IActionResult GoogleLogin()
+    {
+        var url = $"https://accounts.google.com/o/oauth2/v2/auth?" +
+                  $"client_id={_configuration["GOOGLE_CLIENT_ID"]}&" +
+                  $"response_type=code&" +
+                  $"redirect_uri={_configuration["GOOGLE_REDIRECT_URI"]}&" +
+                  $"scope=email%20profile%20openid&" +
+                  $"access_type=offline";
+        return Redirect(url);
+    }
+    
+    // google oauth2 callback
+    [HttpGet("google-callback")]
+    public async Task<IActionResult> GoogleCallback([FromQuery] string code)
+    {
+        if (string.IsNullOrEmpty(code)) return BadRequest("Authorization code is missing.");
+        var result = await _mediator.Send(new GoogleLoginCommand
+        {
+            AuthorizationCode = code
+        });
+        
+        // Set cookies
+        _cookieService.SetAuthCookies(result.AccessToken ?? string.Empty, result.RefreshToken ?? string.Empty);
+        return Ok(result);
     }
 
     // logout endpoint

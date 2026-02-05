@@ -26,6 +26,12 @@ public class UserRepository : IUserRepository
         return result; // Succeeded trả về true nếu tạo thành công
     }
 
+    public async Task<IdentityResult> CreateUserAsync(ApplicationUser user)
+    {
+        var result = await _userManager.CreateAsync(user);
+        return result;
+    }
+
     // Check password
     public async Task<bool> CheckPasswordAsync(ApplicationUser user, string password)
     {

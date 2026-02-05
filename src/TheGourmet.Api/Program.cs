@@ -1,13 +1,11 @@
+using DotNetEnv;
 using Hangfire;
 using Hangfire.PostgreSql;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using TheGourmet.Api.Middlewares;
 using TheGourmet.Application;
-using TheGourmet.Application.Interfaces;
-using TheGourmet.Domain.Entities.Identity;
 using TheGourmet.Infrastructure;
-using TheGourmet.Infrastructure.Persistence;
+
+Env.Load(); // Load environment variables from .env file
 
 var builder = WebApplication.CreateBuilder(args);
 

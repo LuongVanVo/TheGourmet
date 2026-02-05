@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using TheGourmet.Api.Helper;
 using TheGourmet.Infrastructure.Persistence;
 
 namespace TheGourmet.Api.Controllers;
@@ -34,7 +35,8 @@ public class HealthController : ControllerBase
                 {
                     Status = "Healthy",
                     Message = "TheGourmet API is healthy.",
-                    Timestamp = DateTime.UtcNow
+                    Timestamp = DateTime.UtcNow,
+                    User = User.GetCurrentUserId()
                 });
             }
         }

@@ -15,7 +15,7 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
             .HasMaxLength(100)
             .IsRequired();
         
-        // Email - PHẢI unique
+        // Email
         builder.Property(u => u.Email) 
             .IsRequired()
             .HasMaxLength(256);
@@ -24,12 +24,9 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
             .IsUnique()
             .HasDatabaseName("IX_Users_NormalizedEmail");
         
-        // UserName - CHO PHÉP trùng (không có .IsUnique())
+        // UserName
         builder.Property(u => u.UserName)
             .HasMaxLength(256);
-        
-        // KHÔNG thêm unique index cho UserName
-        // builder.HasIndex(u => u.NormalizedUserName).IsUnique(); 
         
         // Other properties
         builder.Property(u => u.AvatarUrl)
