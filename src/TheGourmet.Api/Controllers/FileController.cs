@@ -16,6 +16,11 @@ public class FileController(ICloudinaryService cloudinaryService) : ControllerBa
     [SwaggerOperation(Summary = "Upload user avatar image")]
     public async Task<IActionResult> UploadAvatar(IFormFile file)
     {
+        Console.WriteLine("FIle", file.Name);
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded.");
+        }
         var url = await _cloudinaryService.UploadImageAsync(file, "avatars");
         return Ok(new { url });
     }
