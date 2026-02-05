@@ -205,6 +205,9 @@ public static class DependencyInjection
         
         // Register Cancel Reason Repository
         services.AddScoped<IOrderCancelReasonRepository, OrderCancelReasonRepository>();
+        
+        // Register Google Authentication Service
+        services.AddScoped<IGoogleAuthenticationService, GoogleAuthenticationService>();
         return services;
     }
 }
