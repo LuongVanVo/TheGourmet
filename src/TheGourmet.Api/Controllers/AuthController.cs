@@ -61,6 +61,7 @@ public class AuthController : ControllerBase
     
     // login with google oauth2
     [HttpGet("google-login")]
+    [SwaggerOperation(Summary = "Redirect to Google OAuth2 login page")]
     public IActionResult GoogleLogin()
     {
         var url = $"https://accounts.google.com/o/oauth2/v2/auth?" +
@@ -74,6 +75,7 @@ public class AuthController : ControllerBase
     
     // google oauth2 callback
     [HttpGet("google-callback")]
+    [SwaggerOperation(Summary = "Google OAuth2 callback endpoint")]
     public async Task<IActionResult> GoogleCallback([FromQuery] string code)
     {
         if (string.IsNullOrEmpty(code)) return BadRequest("Authorization code is missing.");
