@@ -4,6 +4,7 @@ using Hangfire.PostgreSql;
 using TheGourmet.Api.Middlewares;
 using TheGourmet.Application;
 using TheGourmet.Infrastructure;
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // Enable legacy timestamp behavior for Npgsql
 
 Env.Load(); // Load environment variables from .env file
 
