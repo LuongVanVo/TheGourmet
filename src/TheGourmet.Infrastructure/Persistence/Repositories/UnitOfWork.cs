@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
     private IVoucherRepository? _voucherRepository;
     private IProductReviewRepository? _productReviewRepository;
     private IOrderCancelReasonRepository? _orderCancelReasonRepository;
+    private IPaymentTransactionRepository? _paymentTransactionRepository;
     public UnitOfWork(TheGourmetDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -54,6 +55,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _orderCancelReasonRepository ??= new OrderCancelReasonRepository(_dbContext);
+        }
+    }
+    
+    public IPaymentTransactionRepository PaymentTransactions
+    {
+        get
+        {
+            return _paymentTransactionRepository ??= new PaymentTransactionRepository(_dbContext);
         }
     }
 

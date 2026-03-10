@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using MassTransit;
 using TheGourmet.Infrastructure.Consumer;
+using TheGourmet.Infrastructure.Payments;
 
 namespace TheGourmet.Infrastructure;
 
@@ -167,6 +168,10 @@ public static class DependencyInjection
             };
         });
         
+        // VNPay Config
+        services.Configure<VNPaySettings>(configuration.GetSection("VNPay"));
+        services.AddScoped<IVNPayService, VNPayService>();
+        
         // Register Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         // Register Email Service
@@ -208,6 +213,9 @@ public static class DependencyInjection
         
         // Register Google Authentication Service
         services.AddScoped<IGoogleAuthenticationService, GoogleAuthenticationService>();
+        
+        // Register Payment Repository
+        services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
         return services;
     }
 }
