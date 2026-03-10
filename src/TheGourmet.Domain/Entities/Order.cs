@@ -48,4 +48,5 @@ public class Order
     [ForeignKey("VoucherId")]
     public virtual Voucher? Voucher { get; set; }
     public virtual OrderCancelReason? OrderCancelReason { get; set; }
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; }
 }

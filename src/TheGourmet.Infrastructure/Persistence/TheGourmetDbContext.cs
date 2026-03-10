@@ -22,6 +22,7 @@ public class TheGourmetDbContext : IdentityDbContext<ApplicationUser, Applicatio
     public DbSet<Voucher> Vouchers { get; set; }
     public DbSet<OrderCancelReason> OrderCancelReasons { get; set; }
     public DbSet<ProductReview> ProductReviews { get; set; }
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -45,5 +46,11 @@ public class TheGourmetDbContext : IdentityDbContext<ApplicationUser, Applicatio
         builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
         builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
         builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+        
+        builder.Entity<PaymentTransaction>()
+            .HasOne(pt => pt.Order)
+            .WithMany(o => o.PaymentTransactions)
+            .HasForeignKey(pt => pt.OrderId)
+            .OnDelete(DeleteBehavior.Restrict); // Không cho xóa Order nếu có giao dịch thanh toán liên quan
     }
 }
