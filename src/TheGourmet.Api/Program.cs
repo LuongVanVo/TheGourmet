@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using DotNetEnv;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -13,7 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 // Add services
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

@@ -1,14 +1,17 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using TheGourmet.Api.Helper;
 using TheGourmet.Application.Features.Orders.Commands.CancelOrder;
 using TheGourmet.Application.Features.Orders.Commands.ConfirmReceipt;
 using TheGourmet.Application.Features.Orders.Commands.CreateOrder;
+using TheGourmet.Application.Features.Orders.Commands.UpdateOrderStatus;
 using TheGourmet.Application.Features.Orders.Queries.GetCancelReasons;
 using TheGourmet.Application.Features.Orders.Queries.GetOrderPreview;
 using TheGourmet.Application.Features.Orders.Queries.GetOrdersByUserId;
+using TheGourmet.Application.Features.Orders.Queries.GetOrdersWithPagination;
 using TheGourmet.Domain.Enums;
 
 namespace TheGourmet.Api.Controllers;
@@ -81,6 +84,30 @@ public class OrderController : ControllerBase
         var command = new ConfirmReceiptCommand();
         command.UserId = User.GetCurrentUserId();
         command.Id = orderId;
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+
+    // Get orders with pagination and search
+    [Authorize(Roles = "Admin")]
+    [HttpGet("all")]
+    [SwaggerOperation(Summary = "Get all orders with pagination and search. Only accessible by Admin.",
+        Description = "Get all orders with pagination and search. Only accessible by Admin.")]
+    public async Task<IActionResult> GetOrdersWithPaginationAndSearch([FromQuery] GetOrdersWithPaginationQuery query)
+    {
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    // update order status
+    [Authorize(Roles = "Admin")]
+    [HttpPatch("{orderId}/status")]
+    [SwaggerOperation(Summary = "Update order status by ID. Only accessible by Admin.",
+        Description = "Update order status by ID. Only accessible by Admin.")]
+    public async Task<IActionResult> UpdateOrderStatus(Guid orderId, [FromBody] UpdateOrderStatusCommand command)
+    {
+        command.OrderId = orderId;
+
         var result = await _mediator.Send(command);
         return Ok(result);
     }
